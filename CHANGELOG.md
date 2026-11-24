@@ -12,19 +12,13 @@ npx mografy@latest init
 
 In a Git checkout of this repository, `npx mografy update --check` shows what would change and `npx mografy update` updates the checkout. Older checkouts without `update`: stop the player, run `git pull --ff-only` and `pnpm install` once, then reopen with `npx mografy dev`.
 
-## Mografy Triangulum v0.3.0 — 2026-11-24
+## Mografy Triangulum v0.1.3 — 2026-11-24
 
 ### Added
 
 - **`d3` extra: data visualisation with D3** — `npx mografy add d3 projects/<film>` copies `scenes/d3.ts`, a ten-second tour (`scenes/d3-demo.ts`: bars on a canvas axis, a line that draws itself and changes data, a donut, a force network, a turning globe) and D3 7.9.2 (ISC, about 0.23 MB) as `assets/d3.module.js`. D3 does the maths (scales, shapes, layouts, projections, colour, number formats) and everything is drawn on the frame's canvas from time: `axis` for canvas axes, `trimPoints` and `strokeReveal` for lines that draw themselves, `sweepArcs`, `tweenData` instead of d3-transition, `simulate` / `positionsAt` to record a force layout once and show any moment of it, `seeded` for D3's randomness, `loadData` for CSV/TSV/JSON in the project and `zhNumber` for 萬 and 億. Skill: `references/data-viz.md`.
 - **`p5` extra: p5.js sketches, frame by frame** — `npx mografy add p5 projects/<film>` copies `scenes/p5.ts`, an eight-second tour (`scenes/p5-demo.ts`) and the official, unmodified p5.js 2.4.0 (LGPL-2.1, about 1.2 MB) as `assets/p5.module.js` with its licence. p5's own draw loop never runs: `sketch()` reseeds `random()` and calls your `draw(p, t, frame)` for exactly the moment Mografy needs, so a sketch exports the same pixels on every run. Skill: `references/p5-sketch.md`, including how to port an existing sketch.
 - **Determinism test for library extras** — the render tests now draw the d3 and p5 tours in order, backwards, jumping and on a fresh page, and require identical pixels.
-
-### Fixed
-
-- **`npx mografy check` trial-renders again when no player is running** — opening a project only describes a build that has not passed before, so `check` without a player printed "Compiled and trial-rendered" without drawing a frame and missed errors such as `Math.random` or a throw in `renderFrame`. It now runs the trial before reporting.
-
-## Mografy Triangulum v0.1.3 — 2026-11-21
 
 ### Changed
 
@@ -39,6 +33,7 @@ In a Git checkout of this repository, `npx mografy update --check` shows what wo
 
 ### Fixed
 
+- **`npx mografy check` trial-renders again when no player is running** — opening a project only describes a build that has not passed before, so `check` without a player printed "Compiled and trial-rendered" without drawing a frame and missed errors such as `Math.random` or a throw in `renderFrame`. It now runs the trial before reporting.
 - **3D films no longer time out on their trial render** — the trial render's time limit is now 60 s instead of the 20 s given on 2026-10-20 (setup stays at 30 s, each frame at 120 s). The headless browser draws WebGL in software, and a Three.js film's first frames spend about 20 s compiling shaders, so a working 3D scene could be reported as an error.
 
 ## Mografy Triangulum v0.1.2 — 2026-11-21

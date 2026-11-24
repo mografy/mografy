@@ -12,19 +12,13 @@ npx mografy@latest init
 
 在這個 repository 的 Git checkout 裡，`npx mografy update --check` 會列出會更新什麼，`npx mografy update` 會更新 checkout。還沒有 `update` 指令的舊 checkout：先停止播放器，執行一次 `git pull --ff-only` 與 `pnpm install`，再用 `npx mografy dev` 重新開啟。
 
-## Mografy Triangulum v0.3.0 — 2026-11-24
+## Mografy Triangulum v0.1.3 — 2026-11-24
 
 ### 新增
 
 - **`d3` extra：用 D3 做資料視覺化**：`npx mografy add d3 projects/<影片>` 會複製 `scenes/d3.ts`、十秒導覽 `scenes/d3-demo.ts`（canvas 軸線上的長條、自己畫出來再換資料的折線、甜甜圈圖、力導向網絡、旋轉地球）和 D3 7.9.2（ISC，約 0.23 MB）的 `assets/d3.module.js`。D3 負責計算（比例尺、圖形、版面配置、地圖投影、色彩、數字格式），所有東西都依時間畫在畫面的 canvas 上：`axis` 畫軸線，`trimPoints` 和 `strokeReveal` 讓線條自己畫出來，`sweepArcs` 展開圓餅，`tweenData` 取代 d3-transition，`simulate` / `positionsAt` 先把力導向算完再顯示任何時刻，`seeded` 給 D3 有種子的亂數，`loadData` 讀專案裡的 CSV/TSV/JSON，`zhNumber` 輸出「萬」「億」。Skill：`references/data-viz.md`。
 - **`p5` extra：一格一格驅動的 p5.js sketch**：`npx mografy add p5 projects/<影片>` 會複製 `scenes/p5.ts`、八秒導覽 `scenes/p5-demo.ts`，以及官方未修改的 p5.js 2.4.0（LGPL-2.1，約 1.2 MB）`assets/p5.module.js` 和授權檔。p5 自己的 draw 迴圈不會跑：`sketch()` 每次重設 `random()` 的種子，再為 Mografy 要的那一刻呼叫 `draw(p, t, frame)`，所以每次輸出的像素都一樣。Skill：`references/p5-sketch.md`，也教怎麼搬現成的 sketch。
 - **函式庫 extra 的決定性測試**：render 測試會用順序、倒序、跳格和新頁面四種方式畫 d3 與 p5 的導覽，像素必須完全相同。
-
-### 修正
-
-- **沒開播放器時，`npx mografy check` 會真的試算畫面了**：開啟專案時，沒驗證過的版本只會讀取匯出內容，所以沒開播放器的 `check` 雖然印出「Compiled and trial-rendered」，其實沒有畫任何一格，會漏掉 `renderFrame` 裡的 `Math.random` 或拋出的錯誤。現在會先試算再回報。
-
-## Mografy Triangulum v0.1.3 — 2026-11-21
 
 ### 變更
 
@@ -39,6 +33,7 @@ npx mografy@latest init
 
 ### 修正
 
+- **沒開播放器時，`npx mografy check` 會真的試算畫面了**：開啟專案時，沒驗證過的版本只會讀取匯出內容，所以沒開播放器的 `check` 雖然印出「Compiled and trial-rendered」，其實沒有畫任何一格，會漏掉 `renderFrame` 裡的 `Math.random` 或拋出的錯誤。現在會先試算再回報。
 - **3D 影片的試算渲染不再逾時** — 試算渲染的時間限制從 2026-10-20 訂的 20 秒放寬為 60 秒（setup 仍是 30 秒，每個畫格仍是 120 秒）。無頭瀏覽器以軟體繪製 WebGL，Three.js 影片的前幾格要花約 20 秒編譯著色器，所以能正常運作的 3D 場景可能被回報為錯誤。
 
 ## Mografy Triangulum v0.1.2 — 2026-11-21
