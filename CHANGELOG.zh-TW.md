@@ -12,6 +12,15 @@ npx mografy@latest init
 
 在這個 repository 的 Git checkout 裡，`npx mografy update --check` 會列出會更新什麼，`npx mografy update` 會更新 checkout。還沒有 `update` 指令的舊 checkout：先停止播放器，執行一次 `git pull --ff-only` 與 `pnpm install`，再用 `npx mografy dev` 重新開啟。
 
+## Mografy Triangulum v0.1.4 — 2026-11-24
+
+這是 0.1.3 的修復版（npm 不能重發同一個版號，所以版號是 0.1.4）。
+
+### 修正
+
+- **建在 `templates/` 裡的影片會出現在播放器**：`npx mografy add <模板> templates/<名稱>` 會把影片建在 `templates/<名稱>`，但播放器在那裡只列模板，所以影片一直不會出現。現在播放器左側的「模板」區會列出 `templates/` 裡的影片。`add` 指定哪個資料夾就裝在哪裡；沒指定資料夾時，模板會裝進 `templates/`，一樣列在模板區。
+- **`npx mografy --help` 的 Skill 說明改正**：`init` 已經不會安裝 Skill，Skill 那一段現在先寫 `npx skills add mografy/mografy`，再說明 Skill 會放在哪裡。
+
 ## Mografy Triangulum v0.1.3 — 2026-11-24
 
 ### 新增

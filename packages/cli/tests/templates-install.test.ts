@@ -42,6 +42,10 @@ test('templates install into the workspace templates/ and the player lists them'
     assert.ok(await isProject(film));
     await readFile(join(film, 'scenes', 'templates', 'hook-impact.ts'));
     assert.equal(requests.filter(r => r.startsWith('templates/hook-impact')).length, before);
+    // A named folder is honoured, also inside templates/ (the player lists that film with the templates).
+    await quiet(async () => runAdd(await planAdd(['hook-impact', join(ws, 'templates', 'my-hook')]), ws, async name => name, false, isProject));
+    assert.ok(await isProject(join(ws, 'templates', 'my-hook')));
+    assert.equal(await isProject(join(ws, 'projects', 'my-hook')), false);
   } finally {
     delete process.env.MOGRAFY_GITHUB_URL;
     server.close();

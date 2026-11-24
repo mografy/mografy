@@ -12,6 +12,15 @@ npx mografy@latest init
 
 In a Git checkout of this repository, `npx mografy update --check` shows what would change and `npx mografy update` updates the checkout. Older checkouts without `update`: stop the player, run `git pull --ff-only` and `pnpm install` once, then reopen with `npx mografy dev`.
 
+## Mografy Triangulum v0.1.4 — 2026-11-24
+
+This is the bug-fix release for 0.1.3 (npm can't publish 0.1.3 twice, so it ships as 0.1.4).
+
+### Fixed
+
+- **Films made in `templates/` now show in the player** — `npx mografy add <template> templates/<name>` created the film in `templates/<name>`, but the player only listed template files there, so the film never showed up. The player now lists films inside `templates/` in its Templates section. `add` installs exactly where you point it; with no folder, a template is installed into `templates/` and listed there too.
+- **`npx mografy --help` describes the Skill correctly** — `init` no longer installs the Skill, so the Skill section now leads with `npx skills add mografy/mografy` and says where it goes.
+
 ## Mografy Triangulum v0.1.3 — 2026-11-24
 
 ### Added

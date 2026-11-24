@@ -71,17 +71,20 @@ export async function listProjects(current?: string): Promise<ProjectList> {
   const examples = new Set((await Promise.all(exampleDirs().map(subfolders))).flat().map(d => resolve(d)));
   const workspace = workspaceFolders();
   const showcase = new Set(workspace ? (await subfolders(workspace.showcase)).map(d => resolve(d)) : []);
+  // Films made from templates into templates/<name> (`npx mografy add <template> templates/<name>`) list with the templates.
+  const templateFilms = new Set(workspace ? (await subfolders(workspace.templates)).map(d => resolve(d)) : []);
   for (const preset of COMPONENT_PRESETS) await add(join(componentRoot(), preset.id), 'component');
   // Projects in the library folder always list as library, opened or not, so that section never empties out.
   const library = await subfolders(libraryDir());
   const inLibrary = new Set(await Promise.all(library.map(d => realpath(d).catch(() => resolve(d)))));
   for (const dir of (await readRecent()).projects) {
     if (resolve(dir) === componentRoot() || inLibrary.has(await realpath(dir).catch(() => resolve(dir)))) continue;
-    await add(dir, examples.has(resolve(dir)) ? 'example' : showcase.has(resolve(dir)) ? 'showcase' : 'recent');
+    await add(dir, examples.has(resolve(dir)) ? 'example' : showcase.has(resolve(dir)) ? 'showcase' : templateFilms.has(resolve(dir)) ? 'template' : 'recent');
   }
   for (const dir of library) await add(dir, 'library');
   for (const dir of examples) await add(dir, 'example');
   for (const dir of showcase) await add(dir, 'showcase');
+  for (const dir of templateFilms) await add(dir, 'template');
   return { current: current ?? null, library: libraryDir(), projects, workspace, templates: workspace ? await readTemplates(workspace.templates) : [] };
 }
 

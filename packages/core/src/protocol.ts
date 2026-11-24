@@ -71,8 +71,8 @@ export type ServerEvent =
 export interface ApiErrorBody { error: { code: string; message: string } }
 export interface ProjectSummary {
   dir: string; name: string;
-  /** component: bundled showcase; recent: opened before; library: user folder; example: bundled example; showcase: a film from the website's showcase (a workspace's showcase/). */
-  kind: 'component' | 'recent' | 'library' | 'example' | 'showcase';
+  /** component: bundled showcase; recent: opened before; library: user folder; example: bundled example; showcase: a film from the website's showcase (a workspace's showcase/); template: a film folder in a workspace's templates/. */
+  kind: 'component' | 'recent' | 'library' | 'example' | 'showcase' | 'template';
   valid: boolean; updatedAt: string;
   /** mtime of .mografy/thumb.png, or null when there is no thumbnail yet. */
   thumb: number | null;

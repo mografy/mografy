@@ -119,9 +119,22 @@ export function Projects({ current, refreshKey, welcome = false }: { current: st
     else if (e.key === 'Escape') { if (q) setQuery(''); else e.currentTarget.blur(); }
   };
 
-  const templateSection = shownTemplates.length || (workspace && !q && (scope === 'all' || scope === 'template')) ? <section className={!q && folds.has('template') ? 'folded' : ''}>
-        <button className="project-group" aria-expanded={q ? true : !folds.has('template')} onClick={() => toggleFold('template')}><span className="chev" aria-hidden="true" />{t.wsGroups.template}<code className="ws-folder">templates/</code><span>{shownTemplates.length}</span></button>
-        {!q && folds.has('template') ? null : shownTemplates.length ? <ul>{shownTemplates.map(item => <TemplateRow key={item.id} item={item} />)}</ul> : <p className="ws-empty">{t.wsTemplatesEmpty}</p>}
+  // Films made into templates/<name> list in the templates section, above the templates themselves.
+  const templateFilms = q ? [] : (list?.projects ?? []).filter(p => p.kind === 'template');
+  const projectRow = (p: ProjectSummary) => {
+    const index = flat.indexOf(p), isCurrent = p.dir === current && !welcome;
+    const meta = busy === p.dir ? t.openingShort : !p.valid ? t.needsFix : p.kind === 'component' ? t.readyMade : p.kind === 'example' || p.kind === 'showcase' || p.kind === 'template' ? slug(p.dir) : ago(p.updatedAt, t);
+    return <li key={p.dir}>
+      <button className={`project-row ${isCurrent ? 'is-current' : ''} ${q && index === cursor ? 'cursor' : ''}`} onClick={() => void open(p.dir)} disabled={busy !== null && busy !== p.dir} aria-current={isCurrent ? 'true' : undefined} title={p.dir}>
+        <i aria-hidden="true" />
+        <span className="project-name">{marked(p.name, q)}</span>
+        <span className="project-meta"> {meta}</span>
+      </button>
+    </li>;
+  };
+  const templateSection = shownTemplates.length || templateFilms.length || (workspace && !q && (scope === 'all' || scope === 'template')) ? <section className={!q && folds.has('template') ? 'folded' : ''}>
+        <button className="project-group" aria-expanded={q ? true : !folds.has('template')} onClick={() => toggleFold('template')}><span className="chev" aria-hidden="true" />{t.wsGroups.template}<code className="ws-folder">templates/</code><span>{templateFilms.length + shownTemplates.length}</span></button>
+        {!q && folds.has('template') ? null : templateFilms.length || shownTemplates.length ? <ul>{templateFilms.map(projectRow)}{shownTemplates.map(item => <TemplateRow key={item.id} item={item} />)}</ul> : <p className="ws-empty">{t.wsTemplatesEmpty}</p>}
       </section> : null;
 
   return <nav className="projects" aria-label={t.projects}>
@@ -167,17 +180,7 @@ export function Projects({ current, refreshKey, welcome = false }: { current: st
           {!folded && kind === 'example' && !group.items.length ? <p className="ws-empty">{t.wsExamplesEmpty}</p> : null}
           {!folded && kind === 'showcase' && !group.items.length ? <p className="ws-empty">{t.wsShowcaseEmpty}</p> : null}
           {folded || !group.items.length ? null : <ul>
-            {group.items.map(p => {
-              const index = flat.indexOf(p), isCurrent = p.dir === current && !welcome;
-              const meta = busy === p.dir ? t.openingShort : !p.valid ? t.needsFix : p.kind === 'component' ? t.readyMade : p.kind === 'example' || p.kind === 'showcase' ? slug(p.dir) : ago(p.updatedAt, t);
-              return <li key={p.dir}>
-                <button className={`project-row ${isCurrent ? 'is-current' : ''} ${q && index === cursor ? 'cursor' : ''}`} onClick={() => void open(p.dir)} disabled={busy !== null && busy !== p.dir} aria-current={isCurrent ? 'true' : undefined} title={p.dir}>
-                  <i aria-hidden="true" />
-                  <span className="project-name">{marked(p.name, q)}</span>
-                  <span className="project-meta"> {meta}</span>
-                </button>
-              </li>;
-            })}
+            {group.items.map(projectRow)}
           </ul>}
         </section></Fragment>;
       })}

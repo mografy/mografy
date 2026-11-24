@@ -29,8 +29,8 @@ export function helpText(color: boolean) {
       row('mografy dev <project>', 'Open a project in the player'),
     ]),
     section('Skill', [
-      row('.claude/skills/mografy, .agents/skills/mografy', 'In a workspace: the Mografy Skill that Claude Code, Codex and other agents read'),
-      row('npx skills add mografy/mografy', 'Install the Skill in this folder (add -g for every folder)'),
+      row('npx skills add mografy/mografy', 'Install the Skill in this folder (add -g for every folder); init does not install it'),
+      row('.claude/skills/mografy, .agents/skills/mografy', 'Where it goes: Claude Code, Codex and other agents read it there'),
       row('mografy mcp', 'MCP clients read the same Skill with the read_guide tool'),
     ]),
     section('Review and export', [
