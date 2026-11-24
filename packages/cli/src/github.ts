@@ -1,10 +1,12 @@
 // Optional files that stay out of a default installation (extras/, templates/, most of examples/) are read from this
-// checkout when they are present, and otherwise downloaded from the same repository on GitHub, file by file.
+// checkout when they are present, else from the npm package's bundle (templates and reference films ship in it), and
+// otherwise downloaded from the same repository on GitHub, file by file.
 // MOGRAFY_GITHUB_URL points the downloads somewhere else (a fork, a mirror, or a local server in tests).
-import { access, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { installation } from '@mografy/server';
 import { VERSION } from './commands/help.js';
+import { bundledFile } from './bundle.js';
 
 const REPOSITORY = 'https://raw.githubusercontent.com/mografy/mografy';
 export const GITHUB_RAW = (process.env.MOGRAFY_GITHUB_URL ?? `${REPOSITORY}/main`).replace(/\/$/, '') + '/';
@@ -17,10 +19,14 @@ export function downloadBases(): string[] {
   return [`${REPOSITORY}/v${VERSION}/`, GITHUB_RAW];
 }
 
-export const exists = (file: string) => access(file).then(() => true, () => false);
+import { exists } from './util.js';
+export { exists };
 
-/** Download one repository file (a path relative to the repository root, with forward slashes). */
+/** One repository file (a path relative to the repository root, with forward slashes): bundled, else downloaded. */
 export async function downloadRepoFile(path: string, fetchImpl: typeof fetch = fetch): Promise<Buffer> {
+  // The package's own copy first: it matches this version and works offline.
+  const bundled = await bundledFile(path);
+  if (bundled) return bundled;
   const encoded = path.split('/').map(encodeURIComponent).join('/');
   let status = 0;
   for (const base of downloadBases()) {

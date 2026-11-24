@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts"
+    "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
+    "test:browser": "node --import tsx --test --test-concurrency=1 \"tests/browser/*.browser.test.ts\""
   },
   "dependencies": {
     "@mografy/core": "workspace:*",

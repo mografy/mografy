@@ -4,7 +4,7 @@
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, normalize, resolve, sep } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
-import { referenceFilmsDir } from '@mografy/server';
+import { showcaseFilmsDir } from '@mografy/server';
 import { displayPath } from './paths.js';
 
 export const SHOWCASE_URL = (process.env.MOGRAFY_SHOWCASE_URL ?? 'https://www.mografy.app/showcase').replace(/\/$/, '');
@@ -84,7 +84,7 @@ export async function extractZip(zip: Buffer, dest: string) {
 /** Download a showcase film into `target` (default: the library's <name>). Never overwrites an existing folder. */
 export async function installShowcase(name: string, target?: string, fetchImpl: typeof fetch = fetch) {
   if (!isShowcaseFilm(name)) throw new Error(`Unknown showcase film: ${name}\nShowcase films:\n${showcaseList()}`);
-  const dest = resolve(target ?? join(referenceFilmsDir(), name));
+  const dest = resolve(target ?? join(showcaseFilmsDir(), name));
   if (await readdir(dest).then(() => true, () => false)) throw new Error(`${displayPath(dest)} already exists. Pass another folder: npx mografy add ${name} <folder>`);
   const url = filmUrl(name);
   console.log(`Downloading ${name} from ${url}…`);
@@ -98,6 +98,7 @@ export async function installShowcase(name: string, target?: string, fetchImpl: 
 }
 
 export function printShowcase(name: string, dest: string, bytes: number) {
-  console.log(`Downloaded the showcase film ${name} (${(bytes / 1048576).toFixed(1)} MB) to ${displayPath(dest)}`);
+  const size = bytes < 1048576 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
+  console.log(`Downloaded the showcase film ${name} (${size}) to ${displayPath(dest)}`);
   console.log(`\nWatch it:   npx mografy dev ${displayPath(dest)}\nRead first: scenes/ and style.md, then references/examples.md in the Mografy Skill`);
 }

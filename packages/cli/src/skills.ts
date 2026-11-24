@@ -3,14 +3,14 @@
 // without `pnpm install`, or an edited Skill Markdown file without a build).
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { exists } from './util.js';
 
-const SOURCES = ['packages/core/src/guide.ts', 'packages/server/src/workspace.ts', 'scripts/sync-agent-docs.ts', 'scripts/compress-video.py'];
+const SOURCES = ['packages/core/src/guide.ts', 'packages/core/src/guide-legacy.ts', 'packages/server/src/workspace.ts', 'scripts/sync-agent-docs.ts', 'scripts/compress-video.py'];
 /** The Skill's Markdown: every file under this folder is a source too. */
 const SKILL_DIR = 'packages/core/skill';
 const stampPath = (root: string) => join(root, 'node_modules', '.cache', 'mografy', 'skill-sources.sha256');
-const exists = (path: string) => access(path).then(() => true, () => false);
 
 export async function skillSourceHash(root: string) {
   const hash = createHash('sha256');

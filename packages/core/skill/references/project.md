@@ -1,0 +1,14 @@
+# Mografy project reference
+
+__INTRODUCTION__
+
+Before product changes, read [AGENTS.md](__REPOSITORY__/AGENTS.md), [architecture](dev-architecture.md), [status](__REPOSITORY__/docs/STATUS.md), and [usage](__REPOSITORY__/README.md). For packing, installing or releasing the npm package, read [npm-package.md](dev-npm-package.md); for install layouts, folders and environment variables, [configuration.md](configuration.md); to show that a Skill revision is better, [dev-skill-evals.md](dev-skill-evals.md).
+
+- `packages/core/skill/` holds the English Skill entrypoint and references as Markdown; `packages/core/src/guide.ts` assembles them, publishing every file in `skill/references/` (link a new one from `SKILL.md` or another reference; `__REPOSITORY__` is filled with the repository's URL). When `project-guide.md` or the Skill pointer changes, copy the outgoing text into `guide-legacy.ts` so unedited old AGENTS.md files still update. After changes, run `pnpm build` in the repository; it ends with `pnpm sync:skills`, which regenerates the Skill. `npx mografy dev` also regenerates it when its sources changed since the last sync.
+- Use `npx mografy update --check` to check the executing source installation, or `npx mografy update` to fast-forward, install/build, sync guidance and restart its active player. Stop and resolve local changes or diverged history rather than overwriting them. Older installations need a one-time manual update documented in README.
+- One `mografy` Skill lives in the source repository's outer `.agents/skills/` folder, with scene, storyboard, animation-principle, and project references. Codex reads it there; the root `.claude/skills/mografy` symlink points Claude to the same folder. Root `CLAUDE.md` also imports the shared Skill. Never create Skill folders inside animation subprojects.
+- Animation code belongs only in scene modules. The Server must never import or evaluate scenes in Node. Do not introduce GSAP, SVG scene layers, or resvg.
+- Application writes to projects use `queueProjectWrite` in `packages/server/src/project.ts` and `atomicWrite`. The player and exports share `@mografy/runtime`, including `post.ts`.
+- Run `pnpm check` and `pnpm test:browser` after repository changes. For scene work, use `npx mografy check --motion [project]`, `npx mografy review [project]`, and inspect the PNGs.
+
+Adapt storyboards to the actual scene and assets. Write plans and prompts in English. Codex invokes image generation; Claude invokes Artifacts when exposed, with a standalone local HTML/Canvas fallback in Claude Code. Read the corresponding local references for details.

@@ -6,6 +6,7 @@ import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve, sep } from 'node:path';
 import { EXAMPLES_DIR, isProject, referenceFilmsDir } from '@mografy/server';
 import { downloadRepoFile } from './github.js';
+import { bundleManifest } from './bundle.js';
 import { displayPath } from './paths.js';
 
 /**
@@ -66,10 +67,10 @@ export async function listExamples(): Promise<ExampleInfo[]> {
 }
 
 export async function examplesList() {
-  const list = await listExamples();
+  const list = await listExamples(), bundled = Boolean(await bundleManifest());
   if (!list.length) return '  (no reference films found)';
   const width = Math.max(...list.map(e => e.name.length));
-  return list.map(e => `  ${e.name.padEnd(width)}  ${e.summary ?? e.title}${e.installed ? '' : ' (from GitHub)'}`).join('\n');
+  return list.map(e => `  ${e.name.padEnd(width)}  ${e.summary ?? e.title}${e.installed || bundled ? '' : ' (from GitHub)'}`).join('\n');
 }
 
 /** Copy examples/<name> to `target` (default: the library's <name>). Never overwrites an existing folder. */
@@ -88,7 +89,8 @@ export async function copyExample(name: string, target?: string) {
 export async function downloadExample(name: string, dest: string, fetchImpl: typeof fetch = fetch) {
   const entry = (await exampleCatalog(fetchImpl)).find(e => e.name === name);
   if (!entry) throw new Error(`${name} is not in examples/catalog.json.`);
-  console.log(`Downloading ${name} (${entry.files.length} files) from GitHub…`);
+  // The npm package carries every catalog film (bundle/), so this only downloads from a checkout without the film.
+  if (!(await bundleManifest())?.files[`examples/${name}/${entry.files[0]}`]) console.log(`Downloading ${name} (${entry.files.length} files) from GitHub…`);
   await mkdir(dest, { recursive: true });
   try {
     const queue = [...entry.files];

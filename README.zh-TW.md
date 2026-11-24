@@ -41,30 +41,32 @@ Mografy 讓你用程式代理（coding agent）做動態設計。你跟 Claude C
 ```sh
 npx mografy@latest init
 cd mografy
+npx skills add mografy/mografy
 npx mografy dev
 ```
 
-`init` 會建立 `mografy` 工作區，並把 Mografy 和給 Claude Code、Codex 等代理用的 Skill 裝進去；`npx mografy dev` 會打開編輯器，先顯示 16 個內建元件。接著在 `mografy` 資料夾裡打開 Claude Code 或 Codex，描述你要的動畫就可以了。工作區的結構跟這個 repository 一樣：
+`init` 會建立 `mografy` 工作區，並把 Mografy 和所有 extras 裝進去。接著在同一個資料夾執行 `npx skills add mografy/mografy` 安裝 Mografy Skill（[skills CLI](https://github.com/vercel-labs/skills)，會裝到 `.claude/skills/mografy` 和 `.agents/skills/mografy`）：它教 Claude Code、Codex 等代理整套流程，extras 的用法也寫在裡面。`npx mografy dev` 會打開編輯器，從空的工作區開始。接著在 `mografy` 資料夾裡打開 Claude Code 或 Codex，描述你要的動畫就可以了。工作區的結構跟這個 repository 一樣：
 
 ```text
 mografy/
   projects/      你的影片，一部一個專案（內建元件在 projects/.components）
-  examples/      用 npx mografy add 加入的參考影片
-  templates/     Mografy Templates，npx mografy add 會從這裡讀取
+  showcase/      官網 Showcase 的影片：npx mografy add showcase/ <影片>
+  examples/      參考影片，init 時安裝（不用連網）
+  templates/     所有模板，init 時安裝（不用連網）
   .claude/ .agents/  Mografy Skill
   node_modules/  Mografy 本體
   mografy.workspace.json
 ```
 
-在工作區（或它裡面任何資料夾）執行的 `npx mografy` 指令都會用這個工作區：新影片放進 `projects/`，`npx mografy add <影片>` 把參考影片複製到 `examples/`，模板直接從 `templates/` 讀取、不用下載，在這裡啟動的 MCP 伺服器也連到它。`init` 本身不會建立專案。
+在工作區（或它裡面任何資料夾）執行的 `npx mografy` 指令都會用這個工作區：新影片放進 `projects/`，`init` 會從套件把所有模板和參考影片放進 `templates/` 和 `examples/`（不用連網），在這裡啟動的 MCP 伺服器也連到它。`init` 不會建立專案：播放器打開時左側顯示這些資料夾，你點選之前不會打開任何東西。
 
 所有東西都在這個資料夾裡，不會全域安裝；刪掉資料夾就清乾淨了。想自己取資料夾名稱，用 `npx mografy@latest init 我的工作區`。也可以用 `npm run dev` 開啟。
 
-**更新**：在工作區裡執行 `npx mografy@latest init`，會把 Mografy、Skill 和模板換成最新版，你的專案不會變。用舊版建立的資料夾是單一專案而不是工作區，照常能用；在它旁邊執行 `npx mografy@latest init` 建一個工作區，再把它搬進 `projects/` 即可。
+**更新**：在工作區裡執行 `npx mografy@latest init`，會把 Mografy 和 extras 換成最新版，你的專案不會變；Skill 用 `npx skills update` 更新。用舊版建立的資料夾是單一專案而不是工作區，照常能用；在它旁邊執行 `npx mografy@latest init` 建一個工作區，再把它搬進 `projects/` 即可。
 
 **FFmpeg 和 Chromium**：都不用自己安裝。檢查和匯出會用電腦上的 Chrome 或 Edge 算繪；第一次匯出影片時，FFmpeg 會自動下載到工作區裡（沒有 Chrome 或 Edge 時，Chromium shell 也一樣）。想事先下載可以執行 `npx mografy setup`，細節請看[設定說明](docs/configuration.md)。
 
-模板隨 Mografy 附上；extras 和參考影片要等 `npx mografy add` 第一次用到時，才會從 GitHub 下載。
+extras（cinema、含字型的 cjk、three、d3、p5、music、walkthrough、stage）隨 Mografy 一起安裝，`npx mografy add <extra> projects/<影片>` 不用連網。模板和參考影片也隨 `init` 安裝；Showcase 影片要等 `npx mografy add` 第一次用到時才下載。
 
 **選用：全域安裝**：`npm install -g mografy` 會把 `mografy` 指令加進 PATH，在任何資料夾都能用；`npx skills add mografy/mografy -g` 會替電腦上所有代理安裝 Skill。用 `npm install -g mografy@latest` 和 `npx skills update` 更新。
 
@@ -97,10 +99,11 @@ mografy/
 
 ## Skill
 
-`mografy` Skill 教代理怎麼規劃、撰寫、審閱和匯出 Mografy 影片，內容包括場景規範、影片架構（一個世界、一個攝影機、一張節拍表）、動態設計、圖層、分鏡、效能、配樂、3D、中日文排版和輸出格式。`npx mografy@latest init` 會把它放進工作區，給 Claude Code（`.claude/skills/mografy`）和 Codex 等代理（`.agents/skills/mografy`）使用，再執行一次 `npx mografy@latest init` 會讓它保持最新。在 Mografy 的 Git 工作副本裡，不安裝代理也找得到。想在任何資料夾都能用，可以用 [skills CLI](https://github.com/vercel-labs/skills) 安裝：
+`mografy` Skill 教代理怎麼規劃、撰寫、審閱和匯出 Mografy 影片，內容包括場景規範、影片架構（一個世界、一個攝影機、一張節拍表）、動態設計、圖層、分鏡、效能、配樂、3D、中日文排版和輸出格式。`init` 不會安裝它：在工作區執行 `npx skills add mografy/mografy`，會裝到 `.claude/skills/mografy`（Claude Code）和 `.agents/skills/mografy`（Codex 等代理）。只有想讓電腦上每個資料夾都能用時才加 `-g`。在 Mografy 的 Git 工作副本裡，不安裝也找得到。用 [skills CLI](https://github.com/vercel-labs/skills)：
 
 ```sh
-npx skills add mografy/mografy -g     # 選用：任何資料夾都能用，Claude Code、Codex 等代理共用
+npx skills add mografy/mografy        # 裝在工作區：Claude Code、Codex 等代理共用
+npx skills add mografy/mografy -g     # 選用：改成任何資料夾都能用
 npx skills update                        # 之後要更新時執行
 ```
 
@@ -109,9 +112,9 @@ Skill 的原稿寫在 [`packages/core/skill/`](packages/core/skill/)，產生到
 ## 從哪裡開始
 
 - **模板**：43 個做產品影片用的現成場景，包括開場、字幕、裝置畫面、步驟、數字、評價、結尾卡和轉場，其中 22 個為 9:16 設計，21 個為 16:9 設計。`npx mografy add hook-impact three-steps cta-endcard projects/my-film` 會用它們組出一支可以播放的影片。全部模板可以在 [mografy.app/library/templates](https://www.mografy.app/library/templates) 瀏覽。
-- **參考影片**：12 秒的[介紹影片](examples/mografy-intro)會跟著安裝。十支 `stage-*` 產品介面短片，以及[作品集](https://www.mografy.app/showcase)上較長的影片，都是加入時才下載，例如 `npx mografy add film-starter projects/my-film`。
+- **參考影片**：12 秒的[介紹影片](examples/mografy-intro)和十支 `stage-*` 產品介面短片都隨 `init` 安裝。[作品集](https://www.mografy.app/showcase)上較長的影片是加入時才下載，例如 `npx mografy add film-starter projects/my-film`。
 - **內建元件**：16 個可以播放、也可以拿來改的小動畫，分成文字與數字、品牌與版面、互動、指示器四類。
-- **Extras**：影片需要時，代理才會複製進專案的輔助工具。包括 `cinema`（攝影機運動與轉場）、`cjk`（直排中日文）、`three`（Three.js 3D）、`music`（對準影片段落的配樂）、`walkthrough` 和 `stage`（產品介面），例如 `npx mografy add cinema cjk projects/my-film`。
+- **Extras**：影片需要時，代理才會複製進專案的輔助工具。包括 `cinema`（攝影機運動與轉場）、`cjk`（直排中日文）、`three`（Three.js 3D）、`d3`（D3 資料視覺化）、`p5`（p5.js 生成藝術，LGPL-2.1）、`music`（對準影片段落的配樂）、`walkthrough` 和 `stage`（產品介面），例如 `npx mografy add cinema cjk projects/my-film`。
 
 直接執行 `npx mografy add` 可以列出全部項目。
 
@@ -242,7 +245,7 @@ pnpm check
 pnpm test:browser
 ```
 
-修改儲存庫之前，請先讀 [AGENTS.md](AGENTS.md)。資料流程請看[架構說明](docs/architecture.md)，已完成和接下來要做的事請看[開發狀態](docs/STATUS.md)。
+修改儲存庫之前，請先讀 [AGENTS.md](AGENTS.md)。資料流程請看[架構說明](docs/architecture.md)，各版本的改動請看[更新紀錄](CHANGELOG.zh-TW.md)（較早的開發紀錄封存在 [docs/archive/STATUS-2026.md](docs/archive/STATUS-2026.md)）。
 
 ## 授權
 

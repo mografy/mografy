@@ -1,6 +1,7 @@
 // The scene module contract: meta and parameter definitions.
 import { z } from 'zod';
 import { color, localPath } from './schema-parts.js';
+import { aspectSize } from './aspect.js';
 
 const shotSchema = z.strictObject({
   /** When the shot ends (the next one starts). */
@@ -73,10 +74,7 @@ export const aspectRatioSchema = z.enum(['16:9', '9:16']);
 export type AspectRatio = z.infer<typeof aspectRatioSchema>;
 /** Keep short-edge detail near the native size, with an exact ratio and valid bounds. */
 export function sceneMetaForAspect(meta: SceneMeta, aspectRatio?: AspectRatio): SceneMeta {
-  if (!aspectRatio) return meta;
-  const unit = Math.min(480, Math.max(1, Math.round(Math.min(meta.width, meta.height) / 9)));
-  const short = unit * 9, long = unit * 16;
-  return sceneMetaSchema.parse({ ...meta, width: aspectRatio === '9:16' ? short : long, height: aspectRatio === '9:16' ? long : short });
+  return aspectRatio ? sceneMetaSchema.parse(aspectSize(meta, aspectRatio)) : meta;
 }
 
 const base = { name: z.string().min(1) };

@@ -41,30 +41,32 @@ You need [Node.js](https://nodejs.org/) 22.12 or later.
 ```sh
 npx mografy@latest init
 cd mografy
+npx skills add mografy/mografy
 npx mografy dev
 ```
 
-`init` creates a `mografy` workspace, installs Mografy and its Skill for Claude Code, Codex and other agents into it, and `npx mografy dev` opens the editor on the sixteen built-in components. Then open Claude Code or Codex in the `mografy` folder and describe the animation. The workspace is laid out like this repository:
+`init` creates a `mografy` workspace and installs Mografy and all its extras into it. Then install the Mografy Skill in the same folder with `npx skills add mografy/mografy` (the [skills CLI](https://github.com/vercel-labs/skills); it goes into `.claude/skills/mografy` and `.agents/skills/mografy`): it teaches Claude Code, Codex and other agents the workflow, and the extras' usage lives in it. `npx mografy dev` opens the editor on the empty workspace. Then open Claude Code or Codex in the `mografy` folder and describe the animation. The workspace is laid out like this repository:
 
 ```text
 mografy/
   projects/      your films, one project each (built-in components in projects/.components)
-  examples/      reference films added with npx mografy add
-  templates/     Mografy Templates, read by npx mografy add
-  .claude/ .agents/  the Mografy Skill
+  showcase/      films from the website showcase: npx mografy add showcase/ <film>
+  examples/      reference films, installed by init (offline)
+  templates/     every template, installed by init (offline)
+  .claude/ .agents/  the Mografy Skill (npx skills add mografy/mografy)
   node_modules/  Mografy itself
   mografy.workspace.json
 ```
 
-Every `npx mografy` command run in the workspace, or in any folder inside it, uses it: new films go into `projects/`, `npx mografy add <film>` copies reference films into `examples/`, templates are read from `templates/` without a download, and an MCP server started there works with it. `init` creates no project of its own.
+Every `npx mografy` command run in the workspace, or in any folder inside it, uses it: new films go into `projects/`, `init` fills `templates/` and `examples/` with every template and reference film from the package (offline), and an MCP server started there works with it. `init` creates no project: the player opens with the folders on the left and nothing open until you pick something.
 
 Everything lives in that folder: nothing is installed globally, and deleting the folder removes it. `npx mografy@latest init my-workspace` names the folder yourself. `npm run dev` works too.
 
-**Updating.** Run `npx mografy@latest init` inside the workspace. It moves its Mografy, Skill and templates to the newest version; your projects stay as they are. A folder made by an earlier version is a single project rather than a workspace; it keeps working, and `npx mografy@latest init` next to it makes a workspace you can move it into (`projects/`).
+**Updating.** Run `npx mografy@latest init` inside the workspace. It moves its Mografy and extras to the newest version; your projects stay as they are. Update the Skill with `npx skills update`. A folder made by an earlier version is a single project rather than a workspace; it keeps working, and `npx mografy@latest init` next to it makes a workspace you can move it into (`projects/`).
 
 **FFmpeg and Chromium.** You don't install either: Chrome or Edge on your computer renders checks and exports, and FFmpeg downloads into the workspace the first time you export a video (a Chromium shell too, only if there is no Chrome or Edge). `npx mografy setup` downloads them ahead of time; details are in [configuration](docs/configuration.md).
 
-Templates come with Mografy; extras and reference films download from GitHub the first time `npx mografy add` needs them.
+Extras (cinema, cjk with its fonts, three, d3, p5, music, walkthrough, stage) come with Mografy, so `npx mografy add <extra> projects/<film>` works offline. Templates and reference films come with `init` too; showcase films download the first time `npx mografy add` needs them.
 
 **Optional: install globally.** `npm install -g mografy` puts a `mografy` command on your PATH for every folder, and `npx skills add mografy/mografy -g` installs the Skill for every agent on the computer. Update them with `npm install -g mografy@latest` and `npx skills update`.
 
@@ -97,10 +99,11 @@ Your timeline edits are saved to `scenes/timeline.json` and your colour swaps to
 
 ## The Skill
 
-The `mografy` Skill teaches your agent how to plan, write, review and export Mografy films: the scene contract, film architecture (one world, one camera, one beat table), motion design, layers, storyboards, performance, music, 3D, CJK type and output formats. `npx mografy@latest init` puts it in the workspace for Claude Code (`.claude/skills/mografy`) and for Codex and other agents (`.agents/skills/mografy`), and running `npx mografy@latest init` again keeps it current. Inside a Git checkout of Mografy the agent finds it without installing. To have it in every folder instead, install it with the [skills CLI](https://github.com/vercel-labs/skills):
+The `mografy` Skill teaches your agent how to plan, write, review and export Mografy films: the scene contract, film architecture (one world, one camera, one beat table), motion design, layers, storyboards, performance, music, 3D, CJK type and output formats. `init` does not install it: run `npx skills add mografy/mografy` in the workspace and it goes into `.claude/skills/mografy` (Claude Code) and `.agents/skills/mografy` (Codex and other agents). Add `-g` only to install it for every folder on the computer. Inside a Git checkout of Mografy the agent finds it without installing. With the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```sh
-npx skills add mografy/mografy -g     # optional: every folder, for Claude Code, Codex and other agents
+npx skills add mografy/mografy        # in the workspace: Claude Code, Codex and other agents
+npx skills add mografy/mografy -g     # optional: every folder instead
 npx skills update                        # later, to get the latest version
 ```
 
@@ -109,9 +112,9 @@ The Skill is written in [`packages/core/skill/`](packages/core/skill/) and gener
 ## Starting points
 
 - **Templates.** 43 ready-made scenes for product videos: hooks, captions, device screens, steps, numbers, reviews, end cards and transitions. 22 are designed for 9:16 and 21 for 16:9. `npx mografy add hook-impact three-steps cta-endcard projects/my-film` creates a playable film from them. You can browse them at [mografy.app/library/templates](https://www.mografy.app/en/library/templates).
-- **Reference films.** The twelve-second [intro](examples/mografy-intro) comes with the install. The ten `stage-*` product UI loops and the longer films on the [showcase](https://www.mografy.app/showcase) download when you add them, for example `npx mografy add film-starter projects/my-film`.
+- **Reference films.** The twelve-second [intro](examples/mografy-intro) and the ten `stage-*` product UI loops come with `init`. The longer films on the [showcase](https://www.mografy.app/showcase) download when you add them, for example `npx mografy add film-starter projects/my-film`.
 - **Built-in components.** Sixteen small animations you can play and adapt: text and numbers, brand and layout, interactions, and indicators.
-- **Extras.** Helpers the agent copies into a project only when the film needs them: `cinema` (camera moves and transitions), `cjk` (vertical Chinese and Japanese type), `three` (Three.js 3D), `music` (a score composed to the film's moments), `walkthrough` and `stage` (product UI). For example, `npx mografy add cinema cjk projects/my-film`.
+- **Extras.** Helpers the agent copies into a project only when the film needs them: `cinema` (camera moves and transitions), `cjk` (vertical Chinese and Japanese type), `three` (Three.js 3D), `d3` (D3 data visualisation), `p5` (p5.js generative sketches, LGPL-2.1), `music` (a score composed to the film's moments), `walkthrough` and `stage` (product UI). For example, `npx mografy add cinema cjk projects/my-film`.
 
 Run `npx mografy add` on its own to list all of them.
 
@@ -242,7 +245,7 @@ pnpm check
 pnpm test:browser
 ```
 
-Read [AGENTS.md](AGENTS.md) before changing the repository, [architecture](docs/architecture.md) for how data flows, and [status](docs/STATUS.md) for what is done and what is next.
+Read [AGENTS.md](AGENTS.md) before changing the repository, [architecture](docs/architecture.md) for how data flows, and the [changelog](CHANGELOG.md) for what has changed (the earlier development log is archived in [docs/archive/STATUS-2026.md](docs/archive/STATUS-2026.md)).
 
 ## License
 

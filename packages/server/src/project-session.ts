@@ -68,7 +68,11 @@ export class ProjectSession extends EventEmitter<{ event: [ServerEvent] }> {
     const run = async () => {
       if (this.closed) throw new ApiError(503, 'CLOSED', 'Server is closing');
       const target = await realpath(resolve(dir)).catch(() => { throw new ApiError(404, 'NOT_FOUND', `Folder not found: ${dir}`); });
-      if (target === this.current.dir) return this.current.snapshot();
+      if (target === this.current.dir) {
+        // Choosing the placeholder project itself leaves the start screen.
+        if (this.current.welcome) { this.current.welcome = false; const snapshot = this.current.snapshot(); this.emit('event', { type: 'snapshot', reason: 'switch', snapshot }); }
+        return this.current.snapshot();
+      }
       if (!await isProject(target)) throw new ApiError(404, 'NOT_A_PROJECT', `${target} has no mografy.json`);
       let nextLock: ServerLock;
       try { nextLock = await ServerLock.acquire(target, this.token); }

@@ -50,6 +50,8 @@ export interface Snapshot {
   builtIn?: boolean;
   /** Where an MCP client should run Mografy for this project (the player's MCP settings). */
   mcp?: { folder: string; workspace: boolean; bin: string } | undefined;
+  /** No project has been chosen yet: the player shows the workspace's start screen instead of this placeholder. */
+  welcome?: boolean;
 }
 /** One project in the player's batch export queue. */
 export interface QueueJob {
@@ -69,10 +71,19 @@ export type ServerEvent =
 export interface ApiErrorBody { error: { code: string; message: string } }
 export interface ProjectSummary {
   dir: string; name: string;
-  /** component: bundled showcase; recent: opened before; library: user folder; example: bundled example. */
-  kind: 'component' | 'recent' | 'library' | 'example';
+  /** component: bundled showcase; recent: opened before; library: user folder; example: bundled example; showcase: a film from the website's showcase (a workspace's showcase/). */
+  kind: 'component' | 'recent' | 'library' | 'example' | 'showcase';
   valid: boolean; updatedAt: string;
   /** mtime of .mografy/thumb.png, or null when there is no thumbnail yet. */
   thumb: number | null;
 }
-export interface ProjectList { current: string | null; library: string; projects: ProjectSummary[] }
+/** One template in the workspace's templates/ folder (templates/catalog.json). */
+export interface TemplateSummary { id: string; name: string; category: string; aspect: string; summary: string; duration?: number | undefined }
+/** The folders of an npx workspace (`npx mografy init`), when the player runs in one. */
+export interface WorkspaceFolders { dir: string; projects: string; examples: string; templates: string; showcase: string }
+export interface ProjectList {
+  current: string | null; library: string; projects: ProjectSummary[];
+  /** Set in a workspace: the sidebar always shows its projects/, examples/ and templates/ folders. */
+  workspace?: WorkspaceFolders | null | undefined;
+  templates?: TemplateSummary[] | undefined;
+}

@@ -1,0 +1,70 @@
+/* Export and batch export v2, and the export steps. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- export and batch export v2: same blocks as the panels */
+.export-dialog:not(.export-job-dialog) { border-radius: 20px; background: var(--ui); }
+.export-dialog:not(.export-job-dialog) .export-header { padding: 16px 20px 16px 24px; }
+.export-header .batch-link { margin-left: auto; margin-right: 8px; padding: 6px 12px; border-radius: 9px; background: var(--ui-raised); border: 1px solid var(--line); color: var(--muted); font-size: 12px; text-decoration: none; }
+.export-header .batch-link:hover { color: var(--text); background: var(--ui-hover); }
+.export-body { grid-template-columns: 200px minmax(0,1fr); }
+.export-formats { padding: 16px 12px; gap: 8px; background: var(--canvas); }
+.export-formats button { position: relative; overflow: hidden; gap: 12px; padding: 14px 12px; border-radius: 13px; border: 1px solid var(--line); background: var(--ui); color: var(--muted); transition: border-color .15s, background .15s; }
+.export-formats button::after { content: ''; position: absolute; right: -30px; bottom: -40px; width: 90px; height: 90px; border-radius: 50%; filter: blur(26px); opacity: 0; background: var(--fmt, #12b5a5); transition: opacity .2s; }
+.export-formats button:nth-child(2) { --fmt: #3b6fb0; } .export-formats button:nth-child(3) { --fmt: #c46b4a; } .export-formats button:nth-child(4) { --fmt: #7a4fa0; } .export-formats button:nth-child(5) { --fmt: #5b7d8a; }
+.export-formats button:hover:not(:disabled) { background: var(--ui-raised); color: var(--text); }
+.export-formats button.selected { background: var(--ui-raised); color: var(--text); border-color: color-mix(in srgb, var(--fmt, #12b5a5) 65%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--fmt, #12b5a5) 45%, transparent); }
+.export-formats button.selected::after { opacity: .45; }
+.export-formats button > * { position: relative; z-index: 1; }
+.export-formats button.selected svg { color: color-mix(in srgb, var(--fmt, #12b5a5) 70%, #fff); }
+.export-formats strong { font-size: 13.5px; }
+.export-formats small { color: var(--faint); }
+.export-settings { padding: 20px 24px 24px; display: flex; flex-direction: column; }
+.export-settings h3 { margin: 0 0 14px; font-size: 15px; letter-spacing: -.01em; }
+.export-settings .export-preview { margin: 0 0 18px; padding: 16px; border-radius: 14px; background: var(--canvas); border: 1px solid var(--line); }
+.export-settings .export-preview canvas { max-height: 220px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.export-settings .export-preview figcaption { color: var(--faint); }
+.xs-label { display: block; margin: 0 4px 8px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.xs-card { margin: 0 0 18px; padding: 4px 14px; border-radius: 14px; background: var(--ui-raised); border: 1px solid var(--line); }
+.xs-card .export-field { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--line); grid-template-columns: 110px minmax(0,1fr); }
+.xs-card .export-field:last-of-type { border-bottom: 0; }
+.xs-card .export-note { margin: 0 0 10px; padding: 10px 12px; border-radius: 9px; background: var(--ui); color: var(--faint); font-size: 11.5px; }
+.xs-card .export-choice > button { background: var(--ui); border: 1px solid var(--line); border-radius: 9px; }
+.xs-card .export-choice > button:hover:not(:disabled) { border-color: var(--line-strong); }
+.export-settings .export-advanced { padding: 4px 14px; border-radius: 14px; background: var(--ui-raised); border: 1px solid var(--line); }
+.export-settings .export-advanced > summary { padding: 10px 0; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+.export-settings .export-advanced[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.export-footer { padding: 14px 20px 14px 24px; background: var(--canvas); border-radius: 0 0 20px 20px; }
+.export-footer button { padding: 9px 16px; border-radius: 10px; }
+.export-footer .export-primary { box-shadow: 0 6px 20px rgba(18,181,165,.3); }
+
+/* batch: the picker side matches the left panel (the queue view keeps its glow) */
+.bx-dialog.pick .bx-scene { background: var(--canvas); border-right-color: var(--line); }
+.bx-dialog.pick .bx-glow { display: none; }
+.bx-label, .bx-group h4 { text-transform: none; letter-spacing: .02em; font-size: 12px; font-weight: 600; color: var(--muted); }
+.bx-film { display: grid; grid-template-columns: 68px minmax(0, 1fr) 18px; align-items: center; gap: 11px; padding: 6px 10px 6px 7px; border: 1px solid #ffffff0c; cursor: pointer; transition: background .15s, border-color .15s; border-radius: 12px; background: var(--ui); border-color: var(--line); }
+.bx-film:hover { background: var(--ui-raised); }
+.bx-film.on { background: var(--ui-raised); border-color: color-mix(in srgb, var(--signal) 55%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--signal) 30%, transparent); }
+.bx-film-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.bx-film-text small { color: var(--faint); }
+.bx-dialog .bx-main { background: var(--ui); }
+.bx-head h3 { color: var(--text); font-size: 19px; }
+.bx-rows { display: grid; gap: 0; padding: 4px 14px; border-radius: 14px; background: var(--ui-raised); border: 1px solid var(--line); }
+.bx-row:last-child { border-bottom: 0; }
+.bx-seg { display: inline-flex; flex-wrap: wrap; justify-self: start; gap: 2px; padding: 3px; border-radius: 10px; border: 1px solid #ffffff10; background: var(--ui); border-color: var(--line); }
+.bx-seg button.on { background: var(--ui-hover); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.bx-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 30px; padding-top: 16px; padding: 12px 14px; border-top: 0; border-radius: 14px; background: var(--ui-raised); border: 1px solid var(--line); }
+.bx-out { margin-top: auto; padding: 13px 16px 15px; border: 1px solid #ffffff0c; background: var(--canvas); border-color: var(--line); border-radius: 14px; }
+.bx-out-head, .bx-out-list small, .bx-foot > span { color: var(--faint); }
+.bx-out-head strong, .bx-out-list li { color: var(--text); }
+.bx-foot { background: var(--ui); }
+
+/* ---------------------------------------------------------------- steps: where you are in an export */
+.steps { display: flex; align-items: center; gap: 4px; margin: 0 0 0 16px; padding: 0; list-style: none; min-width: 0; }
+.steps li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; font-size: 12px; color: var(--faint); white-space: nowrap; }
+.steps li + li::before { content: ''; width: 14px; height: 1px; margin: 0 6px 0 -4px; background: var(--line-strong); }
+.steps li > span { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; font-size: 10.5px; font-weight: 600; background: var(--ui-raised); border: 1px solid var(--line); }
+.steps li.now { color: var(--text); background: var(--ui-raised); }
+.steps li.now > span { background: var(--signal); border-color: var(--signal); color: var(--signal-ink); }
+.steps li.done { color: var(--muted); }
+.steps li.done > span { background: color-mix(in srgb, var(--signal) 18%, transparent); border-color: transparent; color: var(--signal); }
+.bx-head .steps { margin: 0 auto 0 0; }
+.export-job-dialog .steps li.now { background: #ffffff0d; }
+@media (max-width: 700px) { .steps li:not(.now) { font-size: 0; gap: 0; padding-right: 4px; } }

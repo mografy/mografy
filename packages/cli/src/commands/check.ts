@@ -1,16 +1,18 @@
 // `mografy check`: compile and trial-render, through the running player when there is one.
-import { access, realpath } from 'node:fs/promises';
+import { realpath } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
-import { frameCostReport, readApiResponse, sendApi, shotIssues, smoothnessReport, tempoIssues } from '@mografy/core';
+import { frameCostReport, readApiResponse, sendApi, shotIssues, shotLabelIssues, smoothnessReport, tempoIssues } from '@mografy/core';
 import type { FrameCost, Smoothness, Snapshot } from '@mografy/core';
 import { Project, findServer } from '@mografy/server';
 import { displayPath, requireProject } from '../paths.js';
+import { exists } from '../util.js';
 
 export async function checkProject(dir: string, motion = false) {
   await requireProject(dir);
   console.log(`Checking ${displayPath(dir)}`);
   // Every film keeps its design decisions in style.md, so later sessions keep its look (the Skill writes it).
-  const hasStyle = dir.split(sep).includes('.components') || await access(join(dir, 'style.md')).then(() => true, () => false);
+  const component = dir.split(sep).includes('.components');
+  const hasStyle = component || await exists(join(dir, 'style.md'));
   const passed = (snapshot: Snapshot & { cost?: FrameCost | undefined }) => {
     if (!snapshot.scene || snapshot.error) throw new Error(snapshot.error?.message ?? 'The scene did not publish.');
     console.log(`✓ Compiled and trial-rendered in Chromium\n  ${snapshot.scene.meta.width}×${snapshot.scene.meta.height}, ${snapshot.scene.meta.duration}s, version ${snapshot.scene.version}`);
@@ -20,6 +22,9 @@ export async function checkProject(dir: string, motion = false) {
       if (issues.length) throw new Error(issues.join('\n'));
       console.log(`✓ ${meta.shots.length} shot${meta.shots.length === 1 ? '' : 's'}`);
     }
+    // Built-in components are single loops with no storyboard; every film carries its S01… shots and tagged layers.
+    const labels = component ? [] : shotLabelIssues(meta);
+    if (labels.length) console.log(labels.map(issue => `! ${issue}`).join('\n'));
     if (meta.tempo) {
       const issues = tempoIssues(meta, snapshot.project?.audio);
       if (issues.length) console.log(issues.map(issue => `! ${issue}`).join('\n') + '\n  Change meta.tempo or the audio settings so the picture and the music share one grid.');
@@ -45,6 +50,7 @@ export async function checkProject(dir: string, motion = false) {
   }
   const project = await Project.open(dir);
   try {
+    if (project.snapshot().scene) await project.verify();
     passed({ ...project.snapshot(), cost: await project.measure().catch(() => undefined) });
     if (motion) printMotion(await project.motion());
   } finally { await project.close(); }

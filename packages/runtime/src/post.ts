@@ -1,6 +1,6 @@
 // Output post-processing: equal-weight sample mixing, glow and grain.
 // Pure typed-array code, so the browser preview, the headless capture and Node tests run the same math.
-import { outputFrameCount, sampleTimes } from '@mografy/core';
+import { outputFrameCount, sampleTimes } from '@mografy/core/browser';
 import type { RenderSettings } from '@mografy/core';
 import type { SceneRuntime } from './canvas.js';
 

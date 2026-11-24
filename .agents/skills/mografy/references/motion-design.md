@@ -33,7 +33,7 @@ This phrase determines order, overlap, and attention. Only then choose durations
 
 This is an original teaching example, not a mandatory look, schedule, or component recipe. It needs only Canvas marks and typography. Use another mechanism when the brief calls for one.
 
-The optional [scene source](https://github.com/mografy/mografy/blob/main/extras/motion-design.ts) implements this example; inspect its [actual Chromium key poses](https://github.com/mografy/mografy/blob/main/docs/motion-design/poses.png) alongside the code when using it as a reference. Resolve these files from the current checkout when available. These poses show the implemented Canvas scene, not an image-generated concept board. The example uses a generic system sans-serif; choose project fonts for production work.
+The optional [scene source](https://github.com/mografy/mografy/blob/main/extras/motion-design.ts) implements this example; inspect its [actual Chromium key poses](https://github.com/mografy/mografy/blob/main/docs/motion-design/poses.png) alongside the code when using it as a reference. In a checkout they are at `extras/motion-design.ts` and `docs/motion-design/poses.png`; a workspace has the scene at `node_modules/mografy/extras/motion-design.ts`, and the poses image only on GitHub (the link above). These poses show the implemented Canvas scene, not an image-generated concept board. The example uses a generic system sans-serif; choose project fonts for production work.
 
 | Time | Composition and action | Design reason |
 | --- | --- | --- |
@@ -58,7 +58,7 @@ Treat the easing and text-duration estimates in scene authoring as starting heur
 
 ## Review design separately from technical correctness
 
-Run the existing `npx mografy check` and `npx mografy review` workflow. Technical validity, deterministic seeking, loop equality, or successful encoding proves those properties only. Judge the actual rendered animation against the visual direction:
+Run the existing `npx mografy check --motion` and `npx mografy review` workflow. Technical validity, deterministic seeking, loop equality, or successful encoding proves those properties only. Judge the actual rendered animation against the visual direction:
 
 | Criterion | Evidence to inspect |
 | --- | --- |
@@ -71,13 +71,3 @@ Run the existing `npx mografy check` and `npx mografy review` workflow. Technica
 Record a concrete observation with a time or frame, its effect on the viewer, and the correction when a criterion fails. "The headline and diagram start together at 2.0s, so neither leads; delay the supporting caption until the diagram resolves" is useful. "Looks premium; all twelve principles applied" is not evidence. Fix the observed issue and review the affected sequence again.
 
 Stills and transition strips show composition and sampled continuity; they do not by themselves establish the experience of continuous playback. If the available tools cannot inspect playback, say which frames and intervals were inspected and leave temporal quality unverified. Likewise, describe reference fidelity only after comparing the actual rendered output with the reference. Do not claim a visual-quality improvement from a successful build or a written plan alone.
-
-## Evaluate guidance changes on actual tasks
-
-When evaluating a Skill revision in either host, use the same brief, assets, dimensions, and time budget for the previous and revised guidance. Keep each run's source, plan, actual frames, playable output when available, and critique separate. Do not label the new version as the preferred answer for the reviewer. These focused briefs exercise different decisions:
-
-1. **Motion concept:** "Create an eight-second 16:9 bumper for the fictional wordmark LUMA, using only typography and simple Canvas geometry. Communicate 'Many ideas. One direction.' End on the wordmark."
-2. **Explanatory causality:** "Create a six-second 9:16 animation showing a task move from waiting to complete after a button press. Preserve the visible cause/result and let the result read at phone size."
-3. **Scope control:** "In this existing animation, change only the last title and lengthen its final hold by half a second. Preserve its established composition and other timings."
-
-For the first two, compare the five criteria above using actual frames and playback. Let a reviewer state which version communicates the brief more clearly and cite the moment that determined the choice; document ties or regressions. For the third, verify that the requested local edit did not trigger a redesign or an unnecessary storyboard/image-generation cycle. Keep prompt-following and technical checks separate from this visual judgment. A rubric or self-score alone does not establish an improvement, and a run in one host does not establish behavior in another or a general model ranking.

@@ -1,6 +1,6 @@
 // The batch export picker: tick films on the left, choose how to export them on the right.
 import { XIcon } from '@phosphor-icons/react/dist/csr/X';
-import { isVideoFormat } from '@mografy/core';
+import { isVideoFormat } from '@mografy/core/browser';
 import type { ProjectList, ProjectSummary, QueueJob } from '@mografy/core';
 import { Thumb } from './BatchThumb.js';
 import { FORMATS, formatName } from './batch-progress.js';
@@ -8,7 +8,7 @@ import type { BatchEncoder, BatchOptions } from './ExportQueue.js';
 import { useT } from './i18n.js';
 import { Steps } from './Steps.js';
 
-const GROUPS: ProjectSummary['kind'][] = ['recent', 'library', 'example'];
+const GROUPS: ProjectSummary['kind'][] = ['recent', 'library', 'example', 'showcase'];
 
 function Seg<T extends string>({ label, value, options, disabled, onChange }: { label: string; value: T; options: { value: T; label: string }[]; disabled?: boolean | undefined; onChange(value: T): void }) {
   return <div className="bx-seg" role="radiogroup" aria-label={label}>

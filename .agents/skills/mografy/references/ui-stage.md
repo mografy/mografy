@@ -25,7 +25,7 @@ Most of it happens before any code. Write the answers at the top of `storyboards
 1. **Medium.** Still or animation, loop or play once, where it sits (hero, feature card, social 9:16) and the design size: 1280 × 720 for 16:9, 720 × 1280 for 9:16. `withStage(c, s, draw, ctx.width / designWidth)` scales it to the film, so the kit's sizes read as real UI at about 1.5×.
 2. **Look.** `look('light' | 'dark' | 'blueprint' | 'minimal', overrides)`: one accent or mono; the chrome the product really has (`chrome: 'app' | 'browser' | 'tabs' | 'tahoe' | 'card'`), its real icons. Map the product's own tokens (accent, radius, font) onto the look instead of inventing colours.
 3. **Story.** How it feels to use, a flow through the app, or what the system does on its own. Three to five beats, one sentence each. The last beat undoes the first **on screen, with a cause** (an Undo, a back tap, a lock button), so a loop has no seam.
-4. **Example.** Copy the closest reference film (`npx mografy add <name> <folder>`, table below) and make it the brief's product: what is cropped, what overlaps what, one gutter. Copying an example that runs a window off the edge works far better than a rule that says to.
+4. **Example.** Copy the closest reference film into your project (`npx mografy add <name> projects/<project>`, table below) and make it the brief's product: what is cropped, what overlaps what, one gutter. Copying an example that runs a window off the edge works far better than a rule that says to.
 5. **Screen.** List the few real strings the story needs; everything else becomes lines. A dashboard needs about six words, an inbox one real row.
 6. **Choreograph.** The script decides the timing: holds before actions, overlapping changes, one camera push at most per beat, a loop that ends where it began.
 7. **Rehearse.** `npx mografy check --motion`, `npx mografy review` with transition strips over every action and the loop seam, then hold your stills next to the example's.
@@ -56,11 +56,11 @@ const WIN = pin([W, H], [1260, 760], 'tl', [92, 72]);                 // crop fi
 const layout = (s: typeof initial) => ({ markPaid: [1006, 465, 128, 38], total: [354, 290, 220, 58], ...(s.toast ? { undo: UNDO } : {}) });
 
 const show = play(initial, [
-  mark('Mark paid'), wait(0.9),
+  mark('S01 Mark paid'), wait(0.9),                                   // shot titles keep the board's IDs
   click('markPaid', { paid: true }),                                   // the change lands on the press
   wait(0.42), set({ total: 22600, toast: true }),
   focus('total', 1.5, 1.1), wait(2.1), focus(null, 1, 1),
-  mark('Undo'), wait(0.5),
+  mark('S02 Undo'), wait(0.5),
   click('undo', { paid: false, total: 18400, toast: false }),          // the cause of the reset
   wait(0.5), move(START), wait(0.7),
 ], { size: [W, H], layout, start: START, loop: true, cursors: { markPaid: 'pointer' } });
@@ -92,7 +92,7 @@ export function renderFrame(ctx: FrameContext, time: number, p: Values) {
 | `set(values, { duration?, curve? })` | no | A change with no click (a reply arrives, a total updates after a flight) |
 | `focus(name \| null, zoom?, duration?)` | no | Camera push in on a rect and back; runs beside the next steps |
 | `cursor(visible)` | no | Hide the cursor for a beat that runs by itself |
-| `mark(title)` | no | Starts a shot for `meta.shots` and review |
+| `mark(title)` | no | Starts a shot for `meta.shots` and review; title it with the storyboard's ID (`'S01 Mark paid'`) |
 
 Cursor moves take 0.3–0.95 s by distance on a shallow arc, like a hand; never time them by hand. `layout(state)` is the single source of rects: the cursor aims at them, the camera focuses on them, and the drawing should use the same constants.
 
@@ -125,7 +125,7 @@ Cursor moves take 0.3–0.95 s by distance on a shallow arc, like a hand; never 
 - **Few words.** Real strings only where the story is. A full inbox reads as full with one real row and lines for the rest.
 - **One accent, real chrome, real icons.** No fake iOS status bar on a desktop scene; no browser chrome on a native app.
 - **Every change has a cause.** A click, a tap, a drag, a typed character, an arriving message. Nothing changes by itself unless the story is "what the system does on its own"; then hide the cursor (`cursor(false)`).
-- **Hold the payoff.** 1.5–2.5 s on the result; holds before actions read as intention.
+- **Hold the payoff.** 1.5–2.5 s on the result, longer than a film's result hold in [taste.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/taste.md) because a loop has no next shot to carry it; holds before actions read as intention.
 - **One camera move per beat**, in on the thing that changed, back out before the next action.
 - **Short transitions.** Most parts enter in 0.3–0.5 s; containers and flights 0.6 s; overshoot only on pops and landings.
 - **Loops end where they began.** `play(..., { loop: true })` refuses a script whose final state, cursor or camera differs from the start; add `loop: true` to `meta` so `npx mografy check --motion` compares the last frame with the first.

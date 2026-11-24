@@ -8,6 +8,7 @@ import { useEffects } from './useEffects.js';
 import { useScenePlayer } from './useScenePlayer.js';
 import { usePlayerShortcuts } from './usePlayerShortcuts.js';
 import { Projects } from './Projects.js';
+import { Welcome } from './Welcome.js';
 import { exportPanelReducer, INITIAL_EXPORT_PANEL } from './export-state.js';
 import { ExportDialog } from './ExportDialog.js';
 import { ExportProgressToast } from './ExportProgressToast.js';
@@ -45,6 +46,8 @@ function Editor({ settings, onSettings }: { settings: Settings; onSettings(next:
   const [designRequest, setDesignRequest] = useState(0);
   const session = useSession(), { snapshot } = session;
   const projectDir = snapshot?.projectDir;
+  // A workspace with no film yet opens on the start screen; the placeholder project behind it stays hidden.
+  const welcome = snapshot?.welcome === true;
   const stage = useRef<HTMLDivElement>(null);
   const parameters = useParameters(snapshot, session);
   const scene = useScenePlayer(stage, snapshot, parameters.values, session.seek);
@@ -78,7 +81,7 @@ function Editor({ settings, onSettings }: { settings: Settings; onSettings(next:
     <main className={`workspace ${showProjects ? 'with-projects' : ''}`} style={{ '--left-w': `${leftPanel.width}px`, '--right-w': `${rightPanel.width}px` } as CSSProperties}>
       {showProjects ? <PanelHandle side="left" panel={leftPanel} label={t.resizeProjects} /> : null}
       <PanelHandle side="right" panel={rightPanel} label={t.resizeInspector} />
-      {showProjects ? <Projects current={projectDir} refreshKey={`${projectDir}|${snapshot?.scene?.version ?? ''}|${snapshot?.project?.name ?? ''}|${snapshot?.thumbnail ?? ''}`} /> : null}
+      {showProjects ? <Projects current={projectDir} welcome={welcome} refreshKey={`${projectDir}|${welcome}|${snapshot?.scene?.version ?? ''}|${snapshot?.project?.name ?? ''}|${snapshot?.thumbnail ?? ''}`} /> : null}
       <Playback player={scene.player} snapshot={snapshot} stage={stage} guides={guides} onGuides={toggleGuides} viewport={viewport}
         seekBy={seekBy} toast={parameters.error || scene.message} reportPlayhead={session.reportPlayhead}
         editor={timeline} onTransitions={transitions => session.patchProject({ review: { transitions } })} />
@@ -88,6 +91,8 @@ function Editor({ settings, onSettings }: { settings: Settings; onSettings(next:
         savingEffects={effects.saving} effectsError={effects.error}
         onEffects={effects.onChange} onEffectsPreview={effects.onPreview}
         editor={timeline} player={scene.player} onSeek={seekTo} designRequest={designRequest} />
+      {/* Over the stage and inspector, which stay mounted so the first project opens without a reload. */}
+      {welcome ? <Welcome /> : null}
     </main>
     {settingsOpen ? <SettingsPanel settings={settings} onChange={onSettings} onClose={() => setSettingsOpen(false)} projectDir={snapshot?.projectDir} mcp={snapshot?.mcp} /> : null}
     {spot.open ? <Spotlight items={spot.items()} timeItem={spot.timeItem} onClose={spot.close} /> : null}

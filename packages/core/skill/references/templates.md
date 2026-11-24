@@ -30,7 +30,9 @@ npx mografy add hook-impact three-steps cta-endcard projects/<name>
 - When the folder is not a project yet, `npx mografy add` creates it: a project with the templates' aspect ratio, a
   `scenes/main.ts` that plays the templates in the order given, output glow and grain off, and review times. This is a
   complete way to start a film; open it with `npx mografy dev projects/<name>`.
-- Without a folder, inside a project, the templates go into that project. Outside a project, the first template names a new
+- Without a folder, inside a project, the templates go into that project. In a workspace (`npx mografy init`), outside a
+  project, they install into the workspace's `templates/` (as `npx mografy add templates/ <template...>` does), where the
+  player lists them; a workspace has no templates until the user installs some. Outside a workspace the first template names a new
   project in the library. `npx mografy add` never falls back to another (last opened) project.
 - Each template lands in `scenes/templates/<id>.ts` with the shared `kit.ts`, `editorial.ts` and `montage.ts`. Inter
   (500–800) and Anton are copied to `assets/` with their licences and registered under `fonts` in `mografy.json`.
@@ -60,7 +62,7 @@ export function renderFrame(ctx: FrameContext, time: number) {
 }
 ```
 
-Every template enters, holds still while it reads, and exits in its last ~0.5 s, so templates chain without empty frames.
+Every template enters, holds still while it reads, and exits in its last ~0.5 s, so templates chain without empty frames. In a film, each template you play is one shot: put it in the film's beat table with its storyboard ID (`S01 Hook`, `S02 Steps`, …) and export `meta.shots`, so the timeline shows one tagged shot per template ([layers.md](layers.md#tag-colours)).
 Keep the film's quality floor: one world and one camera for shots you write yourself, and hand geometry over at
 cuts.
 
@@ -79,7 +81,7 @@ cuts.
   in the same box).
 - The fonts are Latin subsets. For Chinese or Japanese copy, add `npx mografy add cjk` and a CJK font, and check the
   frames for fallback glyphs.
-- After editing, run `npx mografy check` and `npx mografy review` and look at the stills, as for any scene.
+- After editing, run `npx mografy check --motion` and `npx mografy review` and look at the stills, as for any scene.
 
 ## Catalog
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { outputFrameCount } from '@mografy/core';
+import { outputFrameCount } from '@mografy/core/browser';
 import type { ExportSize, RenderSettings, SceneProject, Snapshot } from '@mografy/core';
 import { createSceneRuntime, renderOutputFrame } from '@mografy/runtime';
 import type { SceneRuntime } from '@mografy/runtime';

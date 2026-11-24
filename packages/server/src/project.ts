@@ -45,6 +45,8 @@ export class Project extends EventEmitter<{ event: [ServerEvent] }> {
   private readonly frames: ProjectFrames;
   private readonly jobs: RenderJobs;
   url = '';
+  /** Opened only as a placeholder before any project was chosen: the player shows the start screen. */
+  welcome = false;
 
   private constructor(readonly dir: string, readonly host: SceneHost) {
     super();
@@ -81,7 +83,7 @@ export class Project extends EventEmitter<{ event: [ServerEvent] }> {
     return structuredClone({
       sequence: this.sequence, url: this.url, projectDir: this.dir, revision: sha256(this.raw),
       project: this.project, scene: this.scene, error: this.error, issues: this.issues,
-      state: this.state, render: this.jobs.status, thumbnail: this.thumbnail, builtIn: isBuiltIn(this.dir), mcp: mcpTarget(this.dir),
+      state: this.state, render: this.jobs.status, thumbnail: this.thumbnail, builtIn: isBuiltIn(this.dir), mcp: mcpTarget(this.dir), welcome: this.welcome,
     });
   }
   private publish(reason: string, clientId?: string) {
@@ -205,6 +207,18 @@ export class Project extends EventEmitter<{ event: [ServerEvent] }> {
     catch (error) { throw new ApiError(422, 'SCENE_ERROR', describe(error)); }
     if (!this.scene || this.error) throw new ApiError(422, 'SCENE_ERROR', this.error?.message ?? 'The scene did not publish.');
     return { ...this.snapshot(), cost: await this.measure().catch(() => undefined) };
+  }
+  /**
+   * Trial-render the current build now, for `mografy check` without a running player: opening a project only
+   * describes a build that has not passed yet (its trial would run seconds later in the background), so a check
+   * must run it before it can report the scene as rendered. Throws the trial's error.
+   */
+  verify() {
+    return this.run(async () => {
+      const { project, build } = this.current();
+      const loaded = await this.host.inspect(build, project);
+      await atomicWrite(projectPaths(this.dir).verified, JSON.stringify({ key: sceneRuntimeKey(build.version, project), meta: loaded.meta, params: loaded.params }) + '\n').catch(() => {});
+    });
   }
   /** Time frames of the current version in Chromium, for `mografy check`. Advisory: never fails a check. */
   measure() {

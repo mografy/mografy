@@ -1,16 +1,19 @@
 // `npx mografy@latest init [folder]` without a global install: the project gets its own copy of the `mografy`
 // package, so `npx mografy dev` inside it runs that copy (no download, works offline) and `npm run dev` does the same.
 // Running `npx mografy@latest init` again in the project only moves that copy to the newer version; the scene,
-// mografy.json and the user's files are never touched. The project also gets this version's Skill for both hosts
-// (.agents/skills/mografy for Codex and others, .claude/skills/mografy for Claude Code), so nothing is installed
-// globally. A source checkout has no package to install and its own Skill, so it skips both.
+// mografy.json and the user's files are never touched. The Skill is not written here: init tells the user to install
+// it with `npx skills add mografy/mografy` in the folder. A source checkout has no package to install, so it skips this.
 import { spawnSync } from 'node:child_process';
-import { cp, mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { existsSync } from 'node:fs';
 import { sharedSkillFiles } from '@mografy/core';
 import { atomicWrite, installation, queueProjectWrite, WORKSPACE_FILE } from '@mografy/server';
 import { VERSION } from './commands/help.js';
+import { extrasList } from './extras.js';
+import { bundleManifest, bundledFile, bundledFolder, copyBundledFolder } from './bundle.js';
+import { INSTALLED_TEMPLATES } from './templates.js';
+import type { TemplateEntry } from './templates.js';
 import { newerVersion } from './package-update.js';
 
 /** The scripts a project gets; existing scripts with the same name are kept. */
@@ -63,7 +66,6 @@ const npmName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '
 export async function installIntoProject(dir: string, name: string, log = (line: string) => console.log(line)) {
   if (installation.kind !== 'package') return false;
   const spec = packageSpec();
-  await writeProjectSkill(dir);
   await writeProjectManifest(dir, name, spec);
   await ignoreNodeModules(dir);
   log(`Installing ${spec.startsWith('mografy@') ? spec : 'mografy'} into this folder (not global)…`);
@@ -126,32 +128,88 @@ the video is saved in projects/<name>/renders/.
 `,
   examples: `# examples
 
-Reference films to watch, study and build on. \`npx mografy add\` lists them; \`npx mografy add <film>\` copies one here
-(\`npx mografy add <film> projects/<name>\` makes it a project of your own instead). The player lists them as examples.
+Reference films to watch, study and build on. They come with Mografy: init puts every one here, offline.
+\`npx mografy add <film> projects/<name>\` makes one a project of your own; \`npx mografy add examples/ <film>\` brings one
+back if you deleted it. The player lists them as examples. Do not edit them here.
+`,
+  showcase: `# showcase
+
+Films from the website's showcase (https://www.mografy.app/showcase), downloaded with \`npx mografy add showcase/ <film>\`.
+Watch them in the player, read their scenes and build on them. None are downloaded at first.
 `,
   templates: `# templates
 
-Mografy Templates: finished scene modules (hooks, captions, product screens, end cards) with their fonts, copied from
-this version of Mografy and replaced when it updates. Do not edit them here: \`npx mografy add <template...> projects/<name>\`
-copies them into a project, where they are yours to change.
+Mografy Templates you installed: finished scene modules (hooks, captions, product screens, end cards) with their fonts.
+They come with Mografy: init installs every one here, offline (browse them on https://www.mografy.app/docs/templates).
+\`npx mografy add <template...> projects/<name>\` copies templates into a project, where they are yours to change.
+Do not edit them here.
 `,
 };
 
 const WORKSPACE_GUIDE = `# Mografy workspace
 
-This folder is a Mografy workspace, set up by \`npx mografy@latest init\`. Mografy and its Skill are installed here
-(node_modules/mografy, .agents/skills/mografy, .claude/skills/mografy), not globally. Every command below runs from this
-folder or any folder inside it, and defaults to it.
+This folder is a Mografy workspace, set up by \`npx mografy@latest init\`. Mografy and its extras are installed here
+(node_modules/mografy), not globally. The Mografy Skill is installed separately: \`npx skills add mografy/mografy\` in this
+folder (.agents/skills/mografy, .claude/skills/mografy). Every command below runs from this folder or any folder inside
+it, and defaults to it.
 
 - projects/   the user's films, one project each (mografy.json + scenes/). Create a new film with
               \`npx mografy init projects/<name>\`, never in the workspace root.
-- examples/   reference films: \`npx mografy add <film>\` copies one here. Read them, do not edit them in place.
-- templates/  Mografy Templates for \`npx mografy add <template...> projects/<name>\`. Do not edit them here.
+- examples/   reference films, all installed by init (offline). Read them, do not edit them in place;
+              \`npx mografy add <film> projects/<name>\` copies one into a film of your own.
+- showcase/   films from the website's showcase: \`npx mografy add showcase/ <film>\` downloads one (none at first).
+- templates/  Mografy Templates, all installed by init (offline). \`npx mografy add <template...> projects/<name>\`
+              copies templates into a film. Do not edit them here.
+- projects/.components  the built-in components (hidden). Mografy's own folders inside projects/ start with a dot.
+
+Extras came with Mografy (node_modules/mografy/extras) and are copied into one film only when it needs them, offline:
+\`npx mografy add <extra...> projects/<name>\`. A scene can import an extra (\`./cinema.js\`) only after that.
+${extrasList()}
+\`npx mografy add\` and \`npx mografy --help\` list them too. Each extra's guide is in the Mografy Skill's references/.
 
 Open the player: \`npx mografy dev\`. Check, review and export a project: \`npx mografy check|review|export projects/<name>\`.
 MCP: \`npx -y mografy mcp\` started in this folder works with this workspace. Update: \`npx mografy@latest init\` here.
-Before writing a scene, use the Mografy Skill.
+Before writing a scene, use the Mografy Skill. If it is missing, ask the user to run \`npx skills add mografy/mografy\` here,
+or read it with the MCP read_guide tool.
 `;
+
+/**
+ * Fill a workspace from the npm package's bundle: every template into templates/ and every reference film into
+ * examples/<film>, so it works offline from the start (showcase films still download on `add`). Only
+ * what is missing is added: a film folder that exists is never touched, nor is an installed template's file.
+ * Does nothing without a bundle (a checkout). Returns what was added.
+ */
+export async function fillWorkspace(dir: string, root = installation.root) {
+  const added = { templates: 0, examples: 0 };
+  if (!await bundleManifest(root)) return added;
+  // Templates: the bundled templates/ files the workspace lacks (its own README.md stays), and every template listed
+  // in installed.json, which is what the player and `add` read.
+  const catalog = await bundledFile('templates/catalog.json', root);
+  if (catalog) {
+    for (const file of await bundledFolder('templates', root)) {
+      const target = join(dir, 'templates', ...file.split('/'));
+      if (file === 'README.md' || existsSync(target)) continue;
+      await mkdir(dirname(target), { recursive: true });
+      await atomicWrite(target, (await bundledFile(`templates/${file}`, root))!);
+    }
+    const index = join(dir, ...INSTALLED_TEMPLATES.split('/'));
+    const installed = await readFile(index, 'utf8').then(text => (JSON.parse(text) as { templates?: { id: string }[] }).templates ?? [], () => []);
+    const known = new Set(installed.map(t => t.id));
+    const fresh = ((JSON.parse(catalog.toString('utf8')) as { templates?: TemplateEntry[] }).templates ?? [])
+      .filter(t => !known.has(t.id)).map(({ agentHint: _, ...entry }) => entry);
+    if (fresh.length) await atomicWrite(index, JSON.stringify({ version: 1, templates: [...installed, ...fresh] }, null, 2) + '\n');
+    added.templates = fresh.length;
+  }
+  const films = await readFile(join(root, 'examples', 'catalog.json'), 'utf8')
+    .then(text => ((JSON.parse(text) as { examples?: { name: string }[] }).examples ?? []).map(film => film.name), () => []);
+  for (const name of films) {
+    const dest = join(dir, 'examples', name);
+    if (existsSync(dest) || !(await bundledFolder(`examples/${name}`, root)).length) continue;
+    await copyBundledFolder(`examples/${name}`, dest, root);
+    added.examples++;
+  }
+  return added;
+}
 
 export const isWorkspace = (dir: string) => existsSync(join(dir, WORKSPACE_FILE));
 
@@ -181,7 +239,7 @@ async function folderLabel(dir: string) {
 
 /**
  * Make `dir` a workspace, or bring one up to this version: the marker, projects/, examples/ and templates/ with their
- * notes, the guide for agents, and this version's templates. Never creates a project and never touches projects/ or
+ * notes and the guide for agents. Templates are not installed: the user adds the ones they pick. Never creates a project and never touches projects/ or
  * examples/ contents.
  */
 export function writeWorkspace(dir: string, name = basename(resolve(dir))) {
@@ -192,11 +250,10 @@ export function writeWorkspace(dir: string, name = basename(resolve(dir))) {
     if (!current) await atomicWrite(marker, JSON.stringify({ version: 1, name }, null, 2) + '\n');
     for (const [folder, note] of Object.entries(WORKSPACE_FOLDERS)) {
       await mkdir(join(dir, folder), { recursive: true });
-      if (!existsSync(join(dir, folder, 'README.md'))) await atomicWrite(join(dir, folder, 'README.md'), note);
+      // Our own note (it starts with the folder's heading) follows the version; a README the user wrote stays.
+      const readme = join(dir, folder, 'README.md'), text = await readFile(readme, 'utf8').catch(() => undefined);
+      if (text === undefined || (text.startsWith(`# ${folder}\n`) && text !== note)) await atomicWrite(readme, note);
     }
-    const bundled = join(installation.root, 'templates');
-    if (resolve(bundled) !== resolve(dir, 'templates') && existsSync(join(bundled, 'catalog.json')))
-      await cp(bundled, join(dir, 'templates'), { recursive: true, force: true, filter: source => basename(source) !== 'README.md' || dirname(source) !== bundled });
     const agents = join(dir, 'AGENTS.md');
     const guide = await readFile(agents, 'utf8').catch(() => undefined);
     if (guide === undefined || guide.startsWith('# Mografy workspace')) await atomicWrite(agents, WORKSPACE_GUIDE);

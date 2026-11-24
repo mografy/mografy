@@ -5,10 +5,10 @@ import { SharedBrowsers } from '@mografy/render';
 import { readdir, realpath } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { displayPath, requireProject } from './paths.js';
+import { delay } from './util.js';
 import { formatName, progressReporter } from './progress.js';
 import { openExportConnection } from './export-transport.js';
 import type { Flags } from './options.js';
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 function exportOutput(value: string | undefined) {
   if (!value) return undefined;

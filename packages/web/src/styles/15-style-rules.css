@@ -1,0 +1,38 @@
+/* Style rules in the Design tab. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- style rules: a row in the Design tab, a window of their own */
+.dsp-entry { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: 12px; row-gap: 8px; width: 100%; padding: 12px 14px 12px 12px; text-align: left; border-radius: 14px; background: var(--ui-raised); border: 1px solid var(--line); color: var(--muted); }
+.dsp-entry:hover:not(:disabled) { background: var(--ui-hover); border-color: var(--line-strong); color: var(--text); }
+.dsp-entry-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: var(--signal); background: color-mix(in srgb, var(--signal) 14%, transparent); }
+.dsp-entry-text { display: grid; gap: 2px; min-width: 0; }
+.dsp-entry-text b { font-size: 13px; font-weight: 600; color: var(--text); }
+.dsp-entry-text small { font-size: 11.5px; color: var(--faint); }
+.dsp-entry > svg { grid-column: 3; grid-row: 1; }
+.dsp-entry-peek { grid-column: 1 / -1; display: grid; gap: 4px; }
+.dsp-entry-peek i { font-style: normal; font-size: 11.5px; color: var(--muted); padding: 6px 10px; border-radius: 8px; background: var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.style-dialog { width: 600px; }
+.style-dialog[open] { display: flex; flex-direction: column; }
+.style-dialog .export-header .hint { margin-left: 10px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; }
+.style-body { flex: 1; min-height: 0; overflow: auto; padding: 18px 24px 22px; }
+.style-intro { margin: 0 0 16px; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.style-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.style-rule { position: relative; display: grid; grid-template-columns: 30px minmax(0,1fr); align-items: start; gap: 10px; padding: 12px 40px 12px 14px; border-radius: 12px; background: var(--ui-raised); border: 1px solid var(--line); font-size: 13.5px; line-height: 1.55; }
+.style-rule:hover { border-color: var(--line-strong); }
+.style-n { padding-top: 2px; font: 600 11px/1.6 "SF Mono", ui-monospace, Menlo, monospace; color: var(--signal); }
+.style-rule .dsp-x { top: 10px; right: 10px; width: 24px; height: 24px; }
+.style-rule:hover .dsp-x { opacity: 1; }
+.style-h { margin: 12px 4px 2px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.style-h:first-child { margin-top: 0; }
+.style-p { padding: 4px 4px; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.style-empty { display: grid; justify-items: center; gap: 12px; padding: 26px 10px; text-align: center; color: var(--muted); }
+.style-empty > svg { width: 52px; height: 52px; padding: 12px; border-radius: 14px; color: var(--signal); background: color-mix(in srgb, var(--signal) 14%, transparent); }
+.style-empty p { margin: 0; max-width: 40ch; font-size: 12.5px; line-height: 1.6; }
+.style-empty > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.style-empty button { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; font-size: 12px; border-radius: 999px; background: var(--ui-raised); border: 1px dashed var(--line-strong); color: var(--muted); }
+.style-empty button:hover:not(:disabled) { color: var(--text); border-color: var(--signal); background: var(--ui-raised); }
+.style-text { width: 100%; min-height: 360px; resize: vertical; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--canvas); color: var(--text); font: 12.5px/1.7 "SF Mono", ui-monospace, Menlo, monospace; }
+.style-text:focus { outline: none; border-color: var(--signal); }
+.style-dialog .export-footer .dsp-add { flex: 1; background: var(--ui); }
+.style-dialog .export-footer .dsp-add small { white-space: nowrap; color: var(--faint); font-size: 11px; }
+.style-dialog .export-footer .dsp-add button { padding: 6px 14px; }
+.style-dialog .export-footer .dsp-add button:disabled { opacity: .35; }
+.style-dialog .export-footer form.dsp-add { flex-direction: row; align-items: center; max-height: none; padding: 4px 4px 4px 12px; }

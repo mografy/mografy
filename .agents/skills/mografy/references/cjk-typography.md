@@ -4,13 +4,13 @@
 
 ## Add to a project
 
-The module and fonts are an optional extra, not part of the installed template. If the project already has `scenes/cjk.ts`, read and reuse that local copy. Otherwise copy from the current Mografy checkout (`extras/cjk/`) or download from GitHub:
+The module and fonts are an optional extra, not part of the installed template. If the project already has `scenes/cjk.ts`, read and reuse that local copy. Otherwise add it:
 
 ```sh
 npx mografy add cjk projects/<name>
 ```
 
-`npx mografy add` copies from this checkout's `extras/` folder, or from GitHub when it is missing, keeps any project file that differs from the extra (`--force` replaces it), and prints the import line. It also copies both font subsets with their licence and registers them under `fonts` in `mografy.json`; remove the one the design does not use. Without the `mografy` command, download the same files from `https://raw.githubusercontent.com/mografy/mografy/main/extras/cjk/`.
+`add` keeps any project file you changed (`--force` replaces it); [extras.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/extras.md#adding-one) covers where it copies from. It also copies the tour `scenes/cjk-demo.ts` (nothing imports it) and both font subsets with their licence and registers them under `fonts` in `mografy.json`; remove the one the design does not use. Without the `mografy` command, download the same files from `https://raw.githubusercontent.com/mografy/mografy/main/extras/cjk/`.
 
 Copy only the font the design uses when one is enough. Keep the licence file with the fonts.
 
@@ -30,7 +30,8 @@ Use the exported `CJK_SANS` and `CJK_SERIF` names with the registered weights. W
 The 9.5 MB of subsets load every time the project opens. Once the copy is settled, shrink them to the film's own characters:
 
 ```sh
-python3 extras/cjk/subset-film-fonts.py projects/my-film
+python3 node_modules/mografy/extras/cjk/subset-film-fonts.py projects/my-film   # in a workspace (pip install fonttools)
+python3 extras/cjk/subset-film-fonts.py projects/my-film                          # in a checkout
 ```
 
 It reads `scenes/`, `mografy.json` and the JSON, Markdown, text and CSV files in `assets/` and `storyboards/`, writes `<font>-film.otf` beside each registered font (about 100–170 KB), and points `mografy.json` at those files. The originals stay; running it again always rebuilds from them, so run it after every copy change, and before delivery. Characters it lists as missing from a font were already missing before (fine when they only appear in code comments). Copy built at runtime from character codes is not seen: pass it with `--extra "字元"`.

@@ -38,7 +38,7 @@ export const en: Dict = {
   paReset: 'Reset', paResetHelp: "Back to the scene's default", subtitles: 'Subtitles', autoSave: 'Auto-save', askAiText: 'Ask AI to change other text.', colours: 'Colors', controls: 'Controls', sceneSettings: 'Scene settings', sceneEmpty: 'This scene has no adjustable settings. Ask AI to change its content.',
 
   newProject: 'New project', projectName: 'Project name', newProjectName: 'New project name', create: 'Create', creating: 'Creating…', openingShort: 'Opening…', savedIn: p => `Saved in ${p}`, needsFix: 'mografy.json needs fixing', openNow: 'Open now', readyMade: 'Ready-to-use animation', justNow: 'just now', minAgo: n => `${n} min ago`, hAgo: n => `${n} h ago`,
-  groups: { component: 'Built-in components', recent: 'Recent', library: 'Projects folder', example: 'Examples' },
+  groups: { component: 'Built-in components', recent: 'Recent', library: 'Projects folder', example: 'Examples', showcase: 'Showcase' },
 
 
   xpTitle: 'Export animation', xdBatch: 'Export several projects…', xdClose: 'Close export',

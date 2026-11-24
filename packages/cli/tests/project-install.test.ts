@@ -1,11 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { createProject, ensureAgentFiles } from '@mografy/server';
-import { ignoreNodeModules, insideFolder, isWorkspace, runningProject, useProjectTools, workspaceProjectDir, writeProjectManifest, writeProjectSkill, writeWorkspace } from '../src/project-install.js';
+import { fillWorkspace, ignoreNodeModules, insideFolder, isWorkspace, runningProject, useProjectTools, workspaceProjectDir, writeProjectManifest, writeProjectSkill, writeWorkspace } from '../src/project-install.js';
 import { VERSION } from '../src/commands/help.js';
+import { EXTRAS } from '../src/extras.js';
 
 test('init writes a private package.json with mografy and the scripts, keeping what the project already has', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'mografy-local-'));
@@ -77,12 +78,17 @@ test('a workspace gets projects/, examples/ and templates/ with notes and a guid
     await writeWorkspace(ws, 'mografy');
     assert.ok(isWorkspace(ws));
     assert.equal(JSON.parse(await readFile(join(ws, 'mografy.workspace.json'), 'utf8')).version, 1);
-    for (const folder of ['projects', 'examples', 'templates']) assert.match(await readFile(join(ws, folder, 'README.md'), 'utf8'), new RegExp(`^# ${folder}`));
+    for (const folder of ['projects', 'showcase', 'examples', 'templates']) assert.match(await readFile(join(ws, folder, 'README.md'), 'utf8'), new RegExp(`^# ${folder}`));
     assert.match(await readFile(join(ws, 'AGENTS.md'), 'utf8'), /^# Mografy workspace[\s\S]*npx mografy init projects\/<name>/);
+    // Without the Skill, an agent still learns which extras came with Mografy and the command that adds one.
+    const workspaceGuide = await readFile(join(ws, 'AGENTS.md'), 'utf8');
+    assert.match(workspaceGuide, /npx mografy add <extra\.\.\.> projects\/<name>/);
+    for (const name of Object.keys(EXTRAS)) assert.match(workspaceGuide, new RegExp(`^  ${name} +\\S`, 'm'), name);
+    assert.match(workspaceGuide, /npx skills add mografy\/mografy[\s\S]*read_guide/);
     assert.equal(await readFile(join(ws, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n');
     await assert.rejects(readFile(join(ws, 'mografy.json')), 'the workspace is not a project');
-    // A checkout's templates/ is copied in, so `mografy add <template>` works offline.
-    await readFile(join(ws, 'templates', 'catalog.json'));
+    // No templates at first: the user installs the ones they pick (`npx mografy add <template> templates/`).
+    assert.deepEqual(await readdir(join(ws, 'templates')), ['README.md']);
     // Again (an update): a custom AGENTS.md and the notes stay; projects are never touched.
     await writeFile(join(ws, 'AGENTS.md'), '# mine\n');
     await writeFile(join(ws, 'projects', 'README.md'), 'edited');
@@ -101,4 +107,36 @@ test('init <name> in a workspace root makes projects/<name>; deeper paths are ke
   assert.ok(insideFolder(ws, join(ws, 'projects', 'a')));
   assert.ok(insideFolder(ws, ws));
   assert.ok(!insideFolder(ws, join(tmpdir(), 'wsx')));
+});
+
+test('init fills a workspace from the package bundle: templates, reference films, deduplicated files, never overwriting', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'mografy-fill-'));
+  try {
+    const pkg = join(dir, 'pkg'), ws = join(dir, 'ws');
+    const write = async (path: string, text: string) => { await mkdir(dirname(join(pkg, path)), { recursive: true }); await writeFile(join(pkg, path), text); };
+    await write('examples/catalog.json', JSON.stringify({ examples: [{ name: 'stage-a', files: [] }, { name: 'stage-b', files: [] }] }));
+    await write('bundle/blobs/font.otf', 'FONT');
+    await write('bundle/blobs/a.json', '{"name":"a"}');
+    await write('bundle/blobs/b.json', '{"name":"b"}');
+    await write('bundle/blobs/hook.ts', 'export const hook = 1;');
+    await write('bundle/blobs/catalog.json', JSON.stringify({ templates: [{ id: 'hook', name: 'Hook', agentHint: 'x' }] }));
+    await write('bundle/files.json', JSON.stringify({ version: 1, files: {
+      'examples/stage-a/mografy.json': 'blobs/a.json', 'examples/stage-a/assets/Inter.otf': 'blobs/font.otf',
+      'examples/stage-b/mografy.json': 'blobs/b.json', 'examples/stage-b/assets/Inter.otf': 'blobs/font.otf',
+      'templates/hook.ts': 'blobs/hook.ts', 'templates/catalog.json': 'blobs/catalog.json', 'templates/README.md': 'blobs/a.json',
+    } }));
+    await writeWorkspace(ws, 'ws');
+    await mkdir(join(ws, 'examples', 'stage-b'));
+    await writeFile(join(ws, 'examples', 'stage-b', 'mine.txt'), 'mine');
+    assert.deepEqual(await fillWorkspace(ws, pkg), { templates: 1, examples: 1 });
+    // One stored font becomes a file in each film that needs it; a film folder that exists is left alone.
+    assert.equal(await readFile(join(ws, 'examples/stage-a/assets/Inter.otf'), 'utf8'), 'FONT');
+    assert.deepEqual(await readdir(join(ws, 'examples/stage-b')), ['mine.txt']);
+    assert.equal(await readFile(join(ws, 'templates/hook.ts'), 'utf8'), 'export const hook = 1;');
+    assert.match(await readFile(join(ws, 'templates/README.md'), 'utf8'), /^# templates/);
+    assert.deepEqual(JSON.parse(await readFile(join(ws, 'templates/installed.json'), 'utf8')).templates, [{ id: 'hook', name: 'Hook' }]);
+    assert.deepEqual(await fillWorkspace(ws, pkg), { templates: 0, examples: 0 });
+    // Without a bundle (a checkout) nothing is added.
+    assert.deepEqual(await fillWorkspace(join(dir, 'other'), join(dir, 'none')), { templates: 0, examples: 0 });
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

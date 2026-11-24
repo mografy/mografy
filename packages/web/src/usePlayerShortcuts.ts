@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { beatAt } from '@mografy/core';
+import { beatAt } from '@mografy/core/browser';
 import type { SceneProject } from '@mografy/core';
 import type { ScenePlayer } from './player.js';
 import type { Viewport } from './useViewport.js';

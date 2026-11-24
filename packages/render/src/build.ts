@@ -6,7 +6,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build, stop } from 'esbuild';
 import type { BuildOptions, Plugin } from 'esbuild';
-import { checkSceneSource } from '@mografy/core';
+import { checkSceneSource, extraForImport } from '@mografy/core';
 import type { SceneProject } from '@mografy/core';
 
 export interface SceneBuild {
@@ -18,6 +18,19 @@ export interface SceneBuild {
 }
 export class SceneBuildError extends Error {
   constructor(message: string, readonly details: string[] = []) { super(details.length ? `${message}\n${details.join('\n')}` : message); this.name = 'SceneBuildError'; }
+}
+
+/**
+ * When a scene imports a Mografy extra the project does not have yet (`./cinema.js` before `mografy add cinema`),
+ * the command that adds it; undefined for any other error.
+ */
+export function missingExtraHint(error: string, root: string, cwd = process.cwd()): string | undefined {
+  const specifier = /^Could not resolve "([^"]+)"/.exec(error)?.[1];
+  const extra = specifier && extraForImport(specifier);
+  if (!extra) return undefined;
+  const local = relative(cwd, root).split('\\').join('/');
+  const project = local === '' ? '' : local.startsWith('..') || isAbsolute(local) ? ` ${JSON.stringify(root)}` : ` ${local}`;
+  return `"${specifier}" is the Mografy extra ${extra}, which isn't in this project yet. Add it with: npx mografy add ${extra}${project}`;
 }
 
 const runtimeHelpers = fileURLToPath(import.meta.resolve('@mografy/runtime/scene'));
@@ -154,7 +167,11 @@ export async function buildScene(projectDir: string, project: SceneProject, over
     code = result.outputFiles[0]!.text;
   } catch (error) {
     const errors = (error as { errors?: { text: string; location?: { file: string; line: number } | null }[] }).errors;
-    throw new SceneBuildError('The scene did not compile', errors?.map(e => e.location ? `${e.location.file}:${e.location.line} ${e.text}` : e.text) ?? [String(error)]);
+    throw new SceneBuildError('The scene did not compile', errors?.flatMap(e => {
+      const line = e.location ? `${e.location.file}:${e.location.line} ${e.text}` : e.text;
+      const hint = missingExtraHint(e.text, root);
+      return hint ? [line, hint] : [line];
+    }) ?? [String(error)]);
   }
   if (problems.length) throw new SceneBuildError('The scene uses something that breaks time-based rendering', problems);
   const version = createHash('sha256').update(code).update(await hashAssets(root, project)).digest('hex').slice(0, 16);

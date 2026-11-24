@@ -1,0 +1,59 @@
+/* Project search, Spotlight and more settings sections. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- project search */
+.project-search:focus-within { color: var(--text); border-color: var(--signal); background: var(--ui); box-shadow: 0 0 0 3px var(--signal-tint); }
+.project-search input { font-size: 13.5px; }
+.project-search input::placeholder { color: var(--faint); }
+.project-search kbd { margin: 0; display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 5px; border: 1px solid var(--line-strong); background: var(--ui-raised); color: var(--faint); font: 11px/1 "JetBrains Mono", ui-monospace, monospace; }
+.project-scope::-webkit-scrollbar { display: none; }
+.project-scope button { flex: none; height: 26px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.project-scope button:hover { color: var(--text); border-color: var(--line-strong); }
+.project-scope button.on { background: var(--text); border-color: var(--text); color: var(--canvas); font-weight: 600; }
+.project-row mark { background: none; color: var(--signal-text); font-weight: 700; }
+.projects > .project-search, .projects > .project-scope { flex: none; }
+
+/* ---------------------------------------------------------------- spotlight */
+.spot-backdrop { position: fixed; inset: 0; z-index: 90; display: flex; justify-content: center; align-items: flex-start; padding-top: 14vh; background: rgba(5, 7, 9, .45); backdrop-filter: blur(6px); animation: toast .14s ease-out; }
+.spot { width: min(640px, calc(100vw - 32px)); max-height: 66vh; display: flex; flex-direction: column; overflow: hidden; border-radius: 16px; border: 1px solid var(--line-strong); background: color-mix(in srgb, var(--ui) 92%, transparent); box-shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .04) inset; }
+.spot-input { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 56px; border-bottom: 1px solid var(--line); color: var(--muted); }
+.spot-input input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; color: var(--text); font-size: 17px; }
+.spot-input input::placeholder { color: var(--faint); font-size: 14px; }
+.spot kbd { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--line-strong); background: var(--ui-raised); color: var(--faint); font: 10.5px/1 "JetBrains Mono", ui-monospace, monospace; }
+.spot-list { flex: 1; overflow: auto; padding: 6px; }
+.spot-group { padding: 10px 10px 4px; color: var(--faint); font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.spot-row { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: 9px; color: var(--muted); cursor: pointer; }
+.spot-row.on { background: var(--signal-tint); color: var(--text); }
+.spot-icon { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--ui-raised); color: var(--muted); }
+.spot-row.on .spot-icon { color: var(--signal-text); }
+.spot-swatch { width: 10px; height: 10px; border-radius: 3px; }
+.spot-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+.spot-label mark { background: none; color: var(--signal-text); font-weight: 700; }
+.spot-hint { flex: none; color: var(--faint); font: 11.5px "JetBrains Mono", ui-monospace, monospace; }
+.spot-enter { flex: none; color: var(--signal-text); }
+.spot-empty { margin: 0; padding: 24px; text-align: center; color: var(--faint); font-size: 13px; }
+.spot-foot { display: flex; gap: 16px; padding: 8px 14px; border-top: 1px solid var(--line); color: var(--faint); font-size: 11.5px; }
+.spot-foot span { display: inline-flex; align-items: center; gap: 4px; }
+.spot-foot span:last-child { margin-left: auto; }
+
+/* ---------------------------------------------------------------- present: where each shot sits */
+.viewer.presenting { grid-template-rows: minmax(0, 1fr) auto; }
+
+/* ---------------------------------------------------------------- settings: more sections */
+.st-keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.st-keys h4 { margin: 0 0 8px; color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.st-keys dl { display: grid; gap: 6px; margin: 0; }
+.st-keys dl div { display: flex; align-items: center; gap: 10px; }
+.st-keys dt { flex: none; min-width: 64px; }
+.st-keys dd { margin: 0; color: var(--muted); font-size: 12.5px; }
+.st-keys kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 5px; border: 1px solid var(--line-strong); background: var(--ui-raised); color: var(--text); font: 11px "JetBrains Mono", ui-monospace, monospace; }
+.st-about { display: grid; gap: 2px; padding: 4px 0 12px; }
+.st-about b { font-size: 16px; }
+.st-about small { color: var(--faint); font: 12px "JetBrains Mono", ui-monospace, monospace; }
+.st-button { flex: none; height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--ui-raised); color: var(--text); font-size: 12.5px; }
+.st-button:hover { border-color: var(--signal); }
+.st .segmented { flex: none; }
+.st .segmented button { padding: 5px 12px; white-space: nowrap; }
+/* Reduce interface motion: panels, dialogs and toasts appear without moving. */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+/* the selected layer only lights up: no edge bar, no inset lines on its buttons */
+.tl-names li.layer button, .tl-names li.layer.current button { box-shadow: none; }
+.tl-names li.layer.current .tl-lock, .tl-names li.layer.current .tl-eye { background: none; }

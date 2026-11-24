@@ -23,7 +23,8 @@ export function TopBar({ session, view, showProjects, onToggleProjects, onExport
   onToggleProjects(): void; onExport(resume: boolean): void; onBatch(): void; onSettings(): void;
 }) {
   const t = useT();
-  const { snapshot } = session, meta = snapshot?.scene?.meta;
+  // On the start screen no project is open yet: no project name, scene facts or export.
+  const { snapshot } = session, welcome = snapshot?.welcome === true, meta = welcome ? undefined : snapshot?.scene?.meta;
   const batchLeft = session.queue.jobs.filter(j => j.state === 'queued' || j.state === 'running').length;
   const connection = { connecting: t.connecting, connected: t.live, offline: t.reconnecting }[session.connection];
   return <header className="topbar">
@@ -31,12 +32,12 @@ export function TopBar({ session, view, showProjects, onToggleProjects, onExport
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M9.5 4.5v15" /></svg>
     </button>
     <span className="brand-lockup"><Logo /></span>
-    <span className="project" title={snapshot?.projectDir}>{snapshot?.project?.name ?? t.opening}</span>
+    <span className="project" title={welcome ? undefined : snapshot?.projectDir}>{welcome ? t.welcomeWorkspace : snapshot?.project?.name ?? t.opening}</span>
     <div className="topbar-end">
       {meta ? <span className="meta">{meta.width} × {meta.height} · {meta.fps} fps{snapshot?.project?.audio ? ` · ${snapshot.project.audio.bpm} BPM` : meta.tempo ? ` · ${meta.tempo.bpm} BPM` : ''}</span> : null}
       <span className={`conn ${session.connection}`} role="status" title={snapshot?.scene ? `${short(view.version)} · ${new Date(snapshot.scene.publishedAt).toLocaleTimeString()}` : undefined}><i />{connection}</span>
       {snapshot?.render && snapshot.render.state !== 'running' ? <button className="last-export" aria-label={t.apLastExport} title={basename(snapshot.render.output)} onClick={() => onExport(true)}><FilmStripIcon size={17} /><span>{snapshot.render.state === 'done' ? t.lastExport : snapshot.render.state === 'failed' ? t.exportFailed : t.exportCancelled}</span></button> : null}
-      <button className="export-primary topbar-export" disabled={!snapshot?.scene} aria-label={snapshot?.render?.state === 'running' ? t.apActiveExport : t.export} onClick={() => onExport(snapshot?.render?.state === 'running')}><ExportIcon size={17} />{snapshot?.render?.state === 'running' ? snapshot.render.cancelling ? t.cancelling : t.exporting : t.export}</button>
+      <button className="export-primary topbar-export" disabled={!snapshot?.scene || welcome} aria-label={snapshot?.render?.state === 'running' ? t.apActiveExport : t.export} onClick={() => onExport(snapshot?.render?.state === 'running')}><ExportIcon size={17} />{snapshot?.render?.state === 'running' ? snapshot.render.cancelling ? t.cancelling : t.exporting : t.export}</button>
       <button className={`topbar-secondary batch-button ${batchLeft ? 'busy' : ''}`} onClick={onBatch} aria-label={batchLeft ? t.batchToGoLabel(batchLeft) : t.batchExport} title={t.batchHelp}><StackIcon size={15} />{batchLeft ? t.batchToGo(batchLeft) : t.batch}</button>
       <button className="icon-button gear" aria-label={t.settings} title={t.settings} onClick={onSettings}><Gear /></button>
     </div>

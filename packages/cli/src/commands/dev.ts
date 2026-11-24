@@ -24,14 +24,14 @@ export async function switchActive(dir: string): Promise<string | undefined> {
   return data.error?.url;
 }
 
-export async function dev(dir: string, flags: Flags) {
+export async function dev(dir: string, flags: Flags, welcome = false) {
   try {
-    const server = await startServer(dir, flags.port === undefined ? {} : { port: flags.port });
+    const server = await startServer(dir, { ...(flags.port === undefined ? {} : { port: flags.port }), welcome });
     const snapshot = server.project.snapshot();
     console.log(`Mografy dev server: ${server.url}`);
-    console.log(`Project: ${displayPath(dir)}`);
+    console.log(welcome ? 'No project open yet: the player starts on your workspace (projects/, showcase/, examples/, templates/).' : `Project: ${displayPath(dir)}`);
     if (installation.kind === 'source') console.log(server.hmr ? 'Player: hot reload from source (Vite)' : 'Player: built files (Vite not installed; run `pnpm install` for hot reload)');
-    console.log(snapshot.scene
+    if (!welcome) console.log(snapshot.scene
       ? `Scene ${snapshot.scene.version} (${snapshot.scene.meta.width}×${snapshot.scene.meta.height}, ${snapshot.scene.meta.duration}s)`
       : `Scene failed to load:\n${snapshot.error?.message ?? ''}`);
     console.log('\nEdit the scene with Claude or Codex. Mografy will compile and trial-render every saved change.\nExports from the player appear here. Press Ctrl+C to stop.');

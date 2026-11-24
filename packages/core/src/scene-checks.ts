@@ -12,6 +12,28 @@ export function shotIssues(meta: Pick<SceneMeta, 'duration' | 'shots'>): string[
   ]);
 }
 
+/** A storyboard shot ID at the start of a shot title: `S01 Open`. */
+export const SHOT_ID = /^S(\d{2,3})(?![\w])/;
+const listed = (items: string[], max = 4) => items.slice(0, max).join(', ') + (items.length > max ? ` and ${items.length - max} more` : '');
+/**
+ * Warnings when a film loses its storyboard labels: shots titled with their IDs (S01, S02…) in film order,
+ * and a tag colour on every layer (shotColour(n) for shot Sn, FILM_COLOUR for whole-film layers).
+ */
+export function shotLabelIssues(meta: Pick<SceneMeta, 'shots' | 'layers'>): string[] {
+  const issues: string[] = [];
+  const shots = meta.shots ?? [];
+  if (!shots.length) issues.push('No meta.shots: list one shot per storyboard shot, titled with its ID ("S01 Open", "S02 …"), so the timeline shows the shots and review checks each one\'s stop frame.');
+  else {
+    const ids = shots.map(shot => SHOT_ID.exec(shot.title ?? '')?.[1]);
+    const missing = ids.flatMap((id, i) => id ? [] : [String(i + 1)]);
+    if (missing.length) issues.push(`Shot${missing.length === 1 ? '' : 's'} ${listed(missing)} ${missing.length === 1 ? 'has' : 'have'} no storyboard ID: title every shot with its ID from the storyboard ("S01 Open", "S02 …").`);
+    else if (ids.some((id, i) => i > 0 && Number(id) <= Number(ids[i - 1]))) issues.push(`Shot IDs run ${listed(ids.map(id => `S${id}`), 8)}: number the shots in film order, one ID per storyboard shot.`);
+  }
+  const bare = (meta.layers?.layers ?? []).filter(layer => !layer.colour);
+  if (bare.length) issues.push(`${bare.length} layer${bare.length === 1 ? '' : 's'} without a tag colour (${listed(bare.map(layer => layer.name || layer.id))}): set colour to shotColour(n) for the layers of shot Sn and FILM_COLOUR for layers that span the film.`);
+  return issues;
+}
+
 /** Differences between the tempo a scene is timed to and the project's audio grid. */
 export function tempoIssues(meta: Pick<SceneMeta, 'tempo'>, audio?: Pick<z.infer<typeof audioSchema>, 'bpm' | 'offset' | 'beatsPerBar'>): string[] {
   const tempo = meta.tempo;

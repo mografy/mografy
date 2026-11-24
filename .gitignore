@@ -9,10 +9,10 @@ dist/
 .output/
 .data/
 
-# Local animation projects stay off GitHub. The sixteen built-in components that
-# installation creates in projects/.components/ are tracked defaults: keep them.
+# Local animation projects stay off GitHub. The sixteen built-in components in
+# projects/.components/ are generated from packages/server/template on the player's
+# first start (ensureComponentProjects), so they are not tracked either.
 /projects/*
-!/projects/.components/
 # Editor type support shared by every project without its own tsconfig.json.
 !/projects/tsconfig.json
 
@@ -21,6 +21,9 @@ dist/
 /.agents/skills/mografy-ref/
 /.agents/skills/mografy-codex-skill/
 /.claude/skills/mografy-ref
+
+# Showreel renders (~25 MB) stay on disk, not in git; the score in showreel/music-src stays tracked.
+/showreel/*.mp4
 
 # npm package build output (pnpm pack:cli)
 /apps/cli/dist/

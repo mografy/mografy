@@ -13,8 +13,8 @@ const C = { bg: '#0E1116', ink: '#EEF2F5', accent: '#1BC6B4' };
 
 // 2. One table for timing. Everything else reads its times from here.
 export const BEATS = beats([
-  { title: 'A point', end: 3.2, stop: 2.4, handoff: .8, note: 'A point draws a line.' },
-  { title: 'One idea', end: 7.2, stop: 6.4, handoff: .8 },
+  { title: 'S01 A point', end: 3.2, stop: 2.4, handoff: .8, note: 'A point draws a line.' }, // titles keep the board's shot IDs
+  { title: 'S02 One idea', end: 7.2, stop: 6.4, handoff: .8 },
   // …
 ]);
 const T = Object.fromEntries(BEATS.list.map(b => [b.title, b.start]));
@@ -25,7 +25,7 @@ const LINE = { x0: 760, x1: 1160, y: 600 };
 const CARD = { x: 960, y: 540, w: 720, h: 420, r: 36 };
 
 // 4. One camera, keyed on the table.
-const camera = cameraPath([[0, 760, 600, 2.4], [T['One idea'] + 1, 960, 575, 1], /* … */]);
+const camera = cameraPath([[0, 760, 600, 2.4], [T['S02 One idea'] + 1, 960, 575, 1], /* … */]);
 
 // 5. The world, drawn from time alone, on any context.
 export function drawFilm(c: Context2D, t: number, data: FilmData) { withCamera(c, camera(t), w => world(w, t, data)); }
@@ -70,7 +70,7 @@ When a shot is retimed, change its `end` in the table only; every key and window
 
 For films longer than about 15 s, let the storyboard and the film share one source. `drawFilm(c, t, data)` above only needs a 2D context, so a storyboard page can draw the real film at each panel's time:
 
-1. Bundle the scene module for the page with esbuild from the checkout: `node -e "require('esbuild').build({ entryPoints: ['storyboards/board.ts'], bundle: true, format: 'esm', outfile: 'storyboards/board.js', alias: { '@mografy/runtime': '<checkout>/packages/runtime/src/scene.ts' } })"` (run it where `esbuild` resolves, such as `packages/runtime`).
+1. Bundle the scene module for the page with esbuild from the checkout: `node -e "require('esbuild').build({ entryPoints: ['storyboards/board.ts'], bundle: true, format: 'esm', outfile: 'storyboards/board.js', alias: { '@mografy/runtime': '<checkout>/packages/runtime/src/scene.ts' } })"` (run it where `esbuild` resolves, such as `packages/runtime`). In a workspace run it from the workspace folder (esbuild is installed beside Mografy) with the alias `'node_modules/mografy/lib/node_modules/@mografy/runtime/dist/scene.js'`.
 2. In `board.ts`, import `filmFrame` from `@mografy/runtime` and `drawFilm`, `prepare` and `BEATS` from the scene; for each panel, tag its canvas with `filmFrame(c, 1920, 1080)`, scale to the panel, and call `drawFilm(c, beat.stop, prepare())`.
 3. Inline `board.js` into the storyboard HTML (or an Artifact) together with the `note` of every beat.
 
@@ -78,4 +78,4 @@ The board then shows the actual pixels of the film at each stop, and the scene i
 
 ## Review
 
-Add `BEATS.reviewTimes` to `review.times` and `BEATS.transitions` to `review.transitions` (step 0.033 s), run `npx mografy check` and `npx mografy review`, and look at every transition strip. For each handoff confirm: the followed object is visible in every frame of the strip, nothing jumps between consecutive frames, no frame is empty, and the camera does not stop at a key that is not a story beat.
+Add `BEATS.reviewTimes` to `review.times` and `BEATS.transitions` to `review.transitions` (step 0.033 s), run `npx mografy check --motion` and `npx mografy review`, and look at every transition strip. For each handoff confirm: the followed object is visible in every frame of the strip, nothing jumps between consecutive frames, no frame is empty, and the camera does not stop at a key that is not a story beat.

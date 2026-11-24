@@ -1,4 +1,4 @@
-import { beatAt, exportSizeSchema, parameterDefinitionsSchema, resolveParams, sceneMetaForAspect, sceneMetaSchema } from '@mografy/core';
+import { beatAt, parseExportSize, parseParameterDefinitions, resolveParams, sceneMetaForAspect, parseSceneMeta } from '@mografy/core/browser';
 import type { AspectRatio } from '@mografy/core';
 import type { BeatGrid, BeatPosition, ExportSize, SceneMeta, ParameterDefinitions, ParameterValues } from '@mografy/core';
 import { hashNoise, seededRandom } from './math.js';
@@ -89,9 +89,9 @@ function checkAssetPath(path: string) {
 export async function createSceneRuntime(element: HTMLCanvasElement, scene: SceneModule, options: RuntimeOptions = {}): Promise<SceneRuntime> {
   // The canvas's own document and window: the player loads each version in its own iframe.
   const doc = element.ownerDocument, win = (doc.defaultView ?? window) as typeof globalThis;
-  const meta = sceneMetaForAspect(sceneMetaSchema.parse(scene.meta), options.aspectRatio), definitions = parameterDefinitionsSchema.parse(scene.params);
+  const meta = sceneMetaForAspect(parseSceneMeta(scene.meta), options.aspectRatio), definitions = parseParameterDefinitions(scene.params);
   if (options.outputSize) {
-    const size = exportSizeSchema.parse(options.outputSize);
+    const size = parseExportSize(options.outputSize);
     if (size.fit === 'reflow') {
       const factor = Math.min(size.width, size.height) / Math.min(meta.width, meta.height);
       const aspect = size.width * 16 === size.height * 9 ? '9:16' : size.width * 9 === size.height * 16 ? '16:9' : undefined;

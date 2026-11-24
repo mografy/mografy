@@ -1,0 +1,92 @@
+/* The Design tab, project rows and the current-project card. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- design panel (inspector tab) */
+.dsp { padding: 14px 14px 28px; display: grid; gap: 22px; }
+.dsp-scanbox { position: absolute; width: 320px; height: 180px; left: -10000px; top: 0; overflow: hidden; pointer-events: none; }
+.dsp-scanbox iframe { width: 100%; height: 100%; border: 0; }
+.dsp-block { display: grid; gap: 8px; min-width: 0; }
+.dsp-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px; min-height: 20px; }
+.dsp-label > span { font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.dsp-label small { color: var(--faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+.dsp-link { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; margin-right: -6px; background: none; color: var(--muted); font-size: 11.5px; border-radius: 6px; }
+.dsp-link:hover:not(:disabled) { background: var(--ui-raised); color: var(--text); }
+.dsp-card { background: var(--ui-raised); border: 1px solid var(--line); border-radius: 14px; padding: 12px; min-width: 0; }
+.dsp-foot { margin: 10px 2px 0; color: var(--faint); font-size: 11px; line-height: 1.5; }
+
+/* shots */
+.dsp-shots { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 6px; scrollbar-width: thin; }
+.dsp-shotchip { flex: 0 0 auto; scroll-snap-align: start; display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; gap: 3px 8px; align-items: center; width: 116px; padding: 8px 10px; text-align: left; border-radius: 10px; background: var(--ui-raised); border: 1px solid var(--line); }
+.dsp-shotchip[aria-current=true] { border-color: var(--signal); background: rgba(18,181,165,.1); }
+.dsp-shotnum { font: 600 10.5px/1 "SF Mono", ui-monospace, Menlo, monospace; color: var(--faint); }
+.dsp-shotchip[aria-current=true] .dsp-shotnum { color: var(--signal); }
+.dsp-shotdots { display: flex; justify-content: flex-end; gap: 3px; }
+.dsp-shotdots i { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+.dsp-shotname { grid-column: 1 / -1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* colours */
+.dsp-bar { display: flex; height: 36px; border-radius: 9px; overflow: hidden; gap: 2px; margin-bottom: 8px; }
+.dsp-bar button { min-width: 10px; padding: 0; border: 0; border-radius: 0; transition: flex-grow .3s ease, transform .12s; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.dsp-bar button:hover:not(:disabled) { transform: scaleY(1.08); }
+.dsp-bar button.on { box-shadow: inset 0 0 0 2px var(--signal); }
+.dsp-bar.skeleton { background: linear-gradient(90deg, var(--line), var(--ui-hover), var(--line)); background-size: 200% 100%; animation: dsp-shimmer 1.2s linear infinite; }
+@keyframes dsp-shimmer { to { background-position: -200% 0; } }
+.dsp-loading p { margin: 0; color: var(--faint); font-size: 11.5px; }
+.dsp-colours { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.dsp-colours li { border-radius: 10px; }
+.dsp-colours li.open { background: var(--ui); box-shadow: inset 0 0 0 1px var(--line); }
+.dsp-row { width: 100%; display: grid; grid-template-columns: 28px minmax(0,1fr); align-items: center; gap: 10px; padding: 6px; background: none; border-radius: 10px; text-align: left; }
+.dsp-row:hover:not(:disabled) { background: var(--ui-hover); }
+.dsp-chip { position: relative; width: 28px; height: 28px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+.dsp-chip i { position: absolute; right: -3px; bottom: -3px; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 2px var(--ui-raised); }
+.dsp-hex { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.dsp-hex code { font-size: 12px; }
+.dsp-hex small { color: var(--faint); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsp-colours li.changed .dsp-hex code { color: var(--signal); }
+.dsp-editor { display: grid; gap: 10px; padding: 4px 8px 10px; }
+.dsp-compare { display: grid; grid-template-columns: 1fr 1fr; height: 56px; border-radius: 10px; overflow: hidden; }
+.dsp-compare > * { position: relative; display: flex; align-items: flex-end; padding: 7px 9px; font-size: 11px; font-weight: 600; }
+.dsp-compare label { cursor: pointer; }
+.dsp-compare input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.dsp-hexrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dsp-hexrow input { width: 100px; padding: 6px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--ui-raised); font: 12px "SF Mono", ui-monospace, Menlo, monospace; }
+.dsp-hexrow input:focus { outline: none; border-color: var(--signal); }
+.dsp-suggest { display: grid; gap: 5px; }
+.dsp-suggest small { color: var(--faint); font-size: 10.5px; }
+.dsp-suggest > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsp-suggest button { width: 22px; height: 22px; padding: 0; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); transition: transform .12s; }
+.dsp-suggest button:hover:not(:disabled) { transform: scale(1.15); }
+
+/* style rules */
+.dsp-x { position: absolute; right: 4px; top: 4px; width: 22px; height: 22px; padding: 0; display: grid; place-items: center; background: none; color: var(--faint); opacity: 0; border-radius: 6px; }
+.dsp-x:focus-visible { opacity: 1; }
+.dsp-x:hover:not(:disabled) { color: var(--text); background: var(--ui-raised); }
+.dsp-add { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 10px; border-radius: 10px; background: var(--ui); border: 1px solid var(--line); color: var(--faint); }
+.dsp-add:focus-within { border-color: var(--signal); color: var(--signal); }
+.dsp-add input { flex: 1; min-width: 0; padding: 6px 0; border: 0; background: none; font-size: 12.5px; color: var(--text); }
+.dsp-add input:focus { outline: none; }
+.dsp-add button { padding: 5px 12px; font-size: 12px; border-radius: 7px; }
+
+/* ---------------------------------------------------------------- project rows: room between thumbnail and text */
+.project-item { grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 6px 8px; }
+.project-item .thumb { width: 56px; }
+.project-text { display: grid; gap: 2px; min-width: 0; }
+.project-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; line-height: 1.3; }
+.project-meta { color: var(--faint); font-size: 11.5px; line-height: 1.3; }
+
+/* ---------------------------------------------------------------- layer timing and motions */
+
+/* ---------------------------------------------------------------- projects panel: current card + one-line rows */
+.project-current::before { display: none; }
+.project-current.component-item .thumb { width: 46%; margin: 0 auto; }
+.project-current .project-name { font-size: 13.5px; font-weight: 600; }
+.project-current .project-meta { color: var(--signal-text); }
+.project-group:hover { color: var(--muted); background: none; }
+.project-group > span:last-child { margin-left: auto; font-weight: 400; font-variant-numeric: tabular-nums; }
+.project-group .chev { width: 6px; height: 6px; transform: rotate(45deg); }
+.projects section.folded .project-group .chev, .project-group[aria-expanded="false"] .chev { transform: rotate(-45deg); }
+.project-row > i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); }
+.project-row.is-current > i { background: var(--signal); }
+.project-row .project-name { flex: 1; min-width: 0; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.project-row .project-meta { flex: none; max-width: 40%; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.project-row.cursor { outline: 1px solid var(--signal); }
+.projects ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; grid-template-columns: minmax(0, 1fr); }
+.projects li, .project-groups, .projects section { min-width: 0; }

@@ -6,7 +6,7 @@ import { PROTOCOL_VERSIONS, serveStdio } from './rpc.js';
 import { tools } from './tools.js';
 
 const INSTRUCTIONS = `Mografy makes Canvas animations as TypeScript scene modules drawn as a pure function of time.
-Before writing or changing a scene, read the Mografy Skill (read_guide, or the installed mografy Skill) and follow its hard rules.
+Before writing or changing a scene, read the Mografy Skill (read_guide with no topic, or the installed mografy Skill) and follow its hard rules; its table names the one reference to read for each job (extras, output, setup and more), so read only those.
 After every scene change run check (motion: true before delivery) and review, and look at the images it returns.
 Export only when the user asks for a file.`;
 

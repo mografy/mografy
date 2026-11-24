@@ -9,6 +9,7 @@ export * from './parameters.js';
 export * from './timing.js';
 export * from './source-checks.js';
 export * from './api.js';
+export * from './extras.js';
 
 export type * from './protocol.js';
 export { sceneRuntimeKey } from './scene-inputs.js';

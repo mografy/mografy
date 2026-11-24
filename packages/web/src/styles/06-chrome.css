@@ -1,0 +1,48 @@
+/* Projects panel, resizable timeline, simpler inspector and calmer chrome. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- projects panel */
+.projects { animation: panel-in-left .22s ease-out both; gap: 10px; padding: 12px 10px 24px; overflow-x: hidden; }
+.project-search { display: flex; align-items: center; color: var(--muted); }
+.project-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: var(--text); outline: none; }
+.project-search input::-webkit-search-cancel-button { display: none; }
+.project-search .tl-icon { width: 24px; height: 24px; }
+.project-groups { display: flex; flex-direction: column; gap: 8px; }
+.projects h3 { display: flex; justify-content: space-between; padding: 0 6px; }
+.projects h3 span { color: var(--faint); font-variant-numeric: tabular-nums; }
+.project-item.cursor { outline: 1px solid var(--signal); }
+.projects-empty { padding: 24px 8px; text-align: center; color: var(--muted); font-size: 13px; display: grid; gap: 10px; justify-items: center; }
+.new-project { padding: 10px; border-radius: var(--radius-m); background: var(--ui-raised); display: grid; gap: 8px; }
+.new-project .row { display: flex; gap: 6px; }
+
+/* ---------------------------------------------------------------- resizable timeline */
+.viewer { display: grid; min-width: 0; min-height: 0; grid-template-rows: minmax(0, 1fr) auto auto; }
+.tl-resize { height: 6px; margin: -3px 0; cursor: row-resize; position: relative; z-index: 3; }
+.tl-resize:hover::after, .tl-resize.active::after { opacity: 1; background: var(--signal); }
+.tl-body { display: grid; grid-template-columns: var(--names) minmax(0, 1fr); overflow-y: auto; border: 1px solid var(--line); max-height: calc(var(--ruler) + var(--row) * var(--tl-rows, 8.5)); border-radius: 14px; background: var(--ui-raised); border-color: var(--line); }
+.timeline.compact .tl-body { max-height: calc(var(--ruler) + var(--layer-row) * var(--tl-rows, 8.5)); }
+
+/* ---------------------------------------------------------------- simpler inspector */
+.inspector-head { display: flex; align-items: center; gap: 4px; padding-right: 8px; border-bottom: 1px solid var(--line); }
+.layer-panel { padding: 14px 16px 16px; display: grid; gap: 10px; }
+.lp-head { display: flex; align-items: center; gap: 6px; }
+.lp-swatch { flex: none; width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 2px solid transparent; }
+.lp-swatch:hover, .lp-swatch[aria-expanded="true"] { border-color: var(--text); }
+.lp-name { flex: 1; min-width: 0; font-weight: 600; background: none !important; border: 1px solid transparent !important; padding: 4px 6px !important; }
+.lp-name:hover { border-color: var(--line-strong) !important; }
+.lp-name:focus { border-color: var(--signal) !important; background: var(--ui-raised) !important; }
+.lp-palette { margin: 0 0 0 32px; }
+.subs-tools input { min-width: 0; }
+
+.solid-motion { font-style: normal; opacity: .75; }
+
+/* ---------------------------------------------------------------- calmer chrome */
+.thumb b { display: grid; place-items: center; width: 100%; height: 100%; background: linear-gradient(135deg, var(--ui-hover), var(--ui-raised)); color: var(--muted); font-size: 15px; font-weight: 600; }
+.tl-names li.layer.shown .tl-eye { opacity: 0; }
+.tl-names li.layer:hover .tl-eye, .tl-names li.layer.current .tl-eye, .tl-names .tl-eye:focus-visible { opacity: 1; }
+.tl-names li.layer .tl-grip { opacity: 0; }
+.tl-names li.layer:hover .tl-grip { opacity: .7; }
+.tl-row.transition .solid span { opacity: 0; transition: opacity .12s; }
+.tl-row.transition .solid:hover span { opacity: 1; }
+.timeline-foot { display: flex; justify-content: space-between; gap: 16px; color: var(--faint); font-size: 12px; flex-wrap: wrap; margin-top: 8px; }
+.timeline-foot span { color: var(--faint); font-size: 12px; }
+.conn { display: flex; align-items: center; gap: 6px; cursor: default; }
+.surround { padding: 12px; }

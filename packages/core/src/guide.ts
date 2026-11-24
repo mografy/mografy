@@ -1,53 +1,24 @@
 // Skill guidance. The Markdown lives in packages/core/skill/ and is bundled into skill-text.ts at build time;
-// this module assembles it into the generated Skill files and keeps the legacy texts used to recognise old copies.
+// this module assembles it into the generated Skill files. Every file under skill/references/ is published as a
+// reference automatically: write the Markdown and link it from SKILL.md or another reference, nothing to register here.
+// Texts of earlier generated files, kept to recognise unedited old copies, are in guide-legacy.ts.
 import { SKILL_TEXT } from './skill-text.js';
+import {
+  GITHUB_SOURCE, LEGACY_PROJECT_GUIDE, LEGACY_REPOSITORY_SKILL, LEGACY_SKILL, LEGACY_STORYBOARD_SKILL, LEGACY_USER_SCOPE_GUIDE,
+  isPreviousProjectPointer, legacySharedProjectGuide, previousPointerGuides,
+} from './guide-legacy.js';
 
 const GUIDE_BODY = SKILL_TEXT['references/scene-authoring.md'];
-const STORYBOARD = SKILL_TEXT['references/storyboard.md'];
-const ANIMATION_PRINCIPLES = SKILL_TEXT['references/animation-principles.md'];
-const MOTION_DESIGN = SKILL_TEXT['references/motion-design.md'];
-const FILM_ARCHITECTURE = SKILL_TEXT['references/film-architecture.md'];
-const PERFORMANCE = SKILL_TEXT['references/performance.md'];
-const OUTPUT = SKILL_TEXT['references/output.md'];
-const TASTE = SKILL_TEXT['references/taste.md'];
-const LAYERS = SKILL_TEXT['references/layers.md'];
-const HOW_TO_FILM = SKILL_TEXT['references/how-to-film.md'];
-const MCP_REFERENCE = SKILL_TEXT['references/mcp.md'];
-const EXAMPLES_REFERENCE = SKILL_TEXT['references/examples.md'];
-const BUILTIN_COMPONENTS_REFERENCE = SKILL_TEXT['references/built-in-components.md'];
-const INTRO_REFERENCE = SKILL_TEXT['references/intro.md'];
-const CAMERA_TRANSITIONS_REFERENCE = SKILL_TEXT['references/camera-transitions.md'];
-const CJK_TYPOGRAPHY_REFERENCE = SKILL_TEXT['references/cjk-typography.md'];
-const THREE_D_REFERENCE = SKILL_TEXT['references/three-d.md'];
-const MUSIC_REFERENCE = SKILL_TEXT['references/music.md'];
-const WALKTHROUGH_REFERENCE = SKILL_TEXT['references/product-walkthrough.md'];
-const UI_STAGE_REFERENCE = SKILL_TEXT['references/ui-stage.md'];
-const VIDEO_COMPRESSION_REFERENCE = SKILL_TEXT['references/video-compression.md'];
-const TEMPLATES_REFERENCE = SKILL_TEXT['references/templates.md'];
 export const SKILL = SKILL_TEXT['SKILL.md'];
 export const GUIDE = SKILL_TEXT['project-guide.md'];
 
-/** project-guide.md as projects received it until November 2026, recognised so their unedited AGENTS.md is replaced. */
-const PREVIOUS_GUIDE = `# Mografy project instructions
+/** Every reference, by file name. Ones containing __REPOSITORY__ (and project.md's __INTRODUCTION__) are filled per repository. */
+const REFERENCES: Record<string, string> = Object.fromEntries(Object.entries(SKILL_TEXT as Record<string, string>)
+  .filter(([file]) => file.startsWith('references/')).map(([file, text]) => [file.slice('references/'.length), text]));
 
-This folder is a Mografy animation project. Animation belongs only in scene modules; \`mografy.json\` contains settings. Use synchronous \`renderFrame(ctx, time, params)\` with deterministic seeking. Scenes run only in the browser; do not introduce GSAP, SVG scene layers, resvg, clocks, or previous-frame state. Use \`ctx.draw\` for common drawing and \`ctx.withCanvas\` for native Canvas scopes.
-
-Codex and Claude share the single \`mografy\` Skill in the Mografy source repository's outer \`.agents/skills/mografy/\` folder. Read its \`SKILL.md\` and the local references relevant to the task: scene authoring, storyboards, animation principles, and project development. Do not create Skill copies inside animation projects. The source repository's root \`.claude/skills/mografy\` entry links Claude to the same Skill.
-
-Codex storyboards use image generation; Claude uses Artifacts when available, otherwise a standalone HTML/Canvas preview. Write plans and prompts in English and save project-specific boards under \`storyboards/\`.
-
-Open the player with \`mografy dev\`. After scene edits, run \`mografy check\` and \`mografy review\`, then inspect the generated PNGs. Export with \`mografy export --format mp4|webm|lottie|svga\` when requested.
-`;
-/** The GitHub home of the Skill before the repository moved to the mografy organisation. */
-const PREVIOUS_GITHUB_SOURCE = 'https://github.com/zz41354899/mografy/blob/main';
-
-
-const LEGACY_SKILL = `---
-name: mografy
-description: Create, edit, validate, visually review, and export Mografy Canvas scene projects. Use when a folder contains mografy.json or the user asks to build or change a Mografy animation.
----
-
-${GUIDE_BODY}`;
+/** References that are the same in every repository: the generated Skill copies them unchanged. */
+export const SKILL_REFERENCES: Readonly<Record<string, string>> = Object.fromEntries(Object.entries(REFERENCES)
+  .filter(([, text]) => !text.includes('__REPOSITORY__') && !text.includes('__INTRODUCTION__')));
 
 /** Exact matches only: custom instructions, including edited generated files, survive upgrades. */
 export function isLegacyAgentFile(contents: string, kind: 'guide' | 'skill', repository?: string) {
@@ -57,103 +28,16 @@ export function isLegacyAgentFile(contents: string, kind: 'guide' | 'skill', rep
     contents === (kind === 'guide' ? LEGACY_PROJECT_GUIDE : LEGACY_REPOSITORY_SKILL) ||
     (kind === 'guide' && contents === LEGACY_USER_SCOPE_GUIDE) ||
     (kind === 'guide' && repository !== undefined && contents === legacySharedProjectGuide(repository)) ||
-    (kind === 'guide' && (isPreviousProjectPointer(contents) || contents === projectGuide().replaceAll('mp4|webm|lottie|svga', 'mp4|lottie|svga')
+    (kind === 'guide' && (isPreviousProjectPointer(contents, GUIDE) || contents === projectGuide().replaceAll('mp4|webm|lottie|svga', 'mp4|lottie|svga')
       || previousPointerGuides().includes(contents)));
 }
 
-/** Generated references are colocated with each host's skill for portable relative links. */
-export const SKILL_REFERENCES = {
-  'scene-authoring.md': GUIDE_BODY,
-  'storyboard.md': STORYBOARD,
-  'animation-principles.md': ANIMATION_PRINCIPLES,
-  'motion-design.md': MOTION_DESIGN,
-  'film-architecture.md': FILM_ARCHITECTURE,
-  'performance.md': PERFORMANCE,
-  'output.md': OUTPUT,
-  'taste.md': TASTE,
-  'layers.md': LAYERS,
-  'how-to-film.md': HOW_TO_FILM,
-  'mcp.md': MCP_REFERENCE,
-} as const;
-
-
-const LEGACY_REPOSITORY_SKILL = `---
-name: mografy
-description: Develop Mografy itself or create, edit, validate, visually review, and export Mografy Canvas scenes in this repository.
----
-
-Read [packages/core/src/guide.ts](../../../packages/core/src/guide.ts) completely before editing a Mografy scene. Its \`GUIDE_BODY\` is the single source for the scene file format, runtime constraints, direct-file editing workflow, Chromium checks, visual review criteria, and CLI export flow.
-
-For product code changes, also follow the repository's root \`AGENTS.md\`, \`docs/architecture.md\`, and required test commands.
-`;
-
-const LEGACY_PROJECT_GUIDE = `# Mografy project instructions
-
-This folder is a Mografy project. Animation lives only in scene modules, normally \`scenes/main.ts\`; \`mografy.json\` contains settings. Render with synchronous \`renderFrame(ctx, time, params)\` and keep seeking deterministic. Scene code runs only in the browser; do not introduce GSAP, SVG scene layers, or resvg.
-
-Read the project Skill in \`.agents/skills/mografy/SKILL.md\` (Codex) or \`.claude/skills/mografy/SKILL.md\` (Claude). Both contain the same English workflow and local references. If skill discovery is unavailable, read these references directly:
-
-- [Scene authoring](.agents/skills/mografy/references/scene-authoring.md): required before scene edits; includes \`ctx.withCanvas\`, drawing APIs, runtime constraints, and CLI review.
-- [Storyboards](.agents/skills/mografy/references/storyboard.md): project-specific shot planning, Codex image generation, and Claude Artifacts or a local HTML fallback.
-- [Animation principles](.agents/skills/mografy/references/animation-principles.md): the twelve principles applied through deterministic Canvas motion.
-
-Open the player with \`mografy dev\`. After scene edits, run \`mografy check\` and \`mografy review\`, then inspect every generated review PNG. Export with \`mografy export --format mp4|lottie|svga\` when requested. Keep storyboards in \`storyboards/\` and out of project animation settings.
-`;
-
-const LEGACY_STORYBOARD_SKILL = `---
-name: mografy-storyboard
-description: Write project-specific Mografy storyboards and shot lists with visual key poses and animation direction. Use when the user requests a Mografy storyboard, shot breakdown, or visual plan before scene implementation.
----
-
-# Mografy storyboard
-
-Read the project's \`mografy.json\`, scene entry, imported modules, and assets. Use its actual dimensions, palette, fonts, brand artwork, and characters.
-
-- Read [references/storyboard.md](references/storyboard.md) for the English shot list and visual deliverables. In Codex, invoke image generation; in Claude, use Artifacts when available, otherwise write the standalone HTML preview.
-- Read [references/animation-principles.md](references/animation-principles.md) to select expressive motion for each shot, with clear anticipation, action, settle, and reading holds.
-- Read [references/scene-authoring.md](references/scene-authoring.md) when implementation is requested, and [references/project.md](references/project.md) when working on Mografy itself.
-
-Save the written plan and visual output links under \`storyboards/\`. Keep all plans, shot labels, and prompts in English. Preserve supplied copy and artwork unless the user requests changes. A storyboard-only request delivers the board; implement scene modules when the request also includes animation. Review actual rendered frames separately from conceptual panels.
-`;
-
 /** Both hosts read one Mografy Skill from the outer .agents folder. */
 function skillFilesWithRepositoryLinks(repository: string, introduction = `This skill was generated for the Mografy repository at \`${repository}\`. Use the current checkout's instructions when another checkout is explicitly selected. For an animation project elsewhere, read that project's settings and assets; do not assume it is inside this repository.`): { mografy: Record<string, string> } {
-  const project = `# Mografy project reference
-
-${introduction}
-
-Before product changes, read [AGENTS.md](${repository}/AGENTS.md), [architecture](${repository}/docs/architecture.md), [status](${repository}/docs/STATUS.md), and [usage](${repository}/README.md).
-
-- \`packages/core/skill/\` holds the English Skill entrypoint and references as Markdown; \`packages/core/src/guide.ts\` assembles them. After changes, run \`pnpm build\` in the repository; it ends with \`pnpm sync:skills\`, which regenerates the Skill. \`npx mografy dev\` also regenerates it when its sources changed since the last sync.
-- Use \`npx mografy update --check\` to check the executing source installation, or \`npx mografy update\` to fast-forward, install/build, sync guidance and restart its active player. Stop and resolve local changes or diverged history rather than overwriting them. Older installations need a one-time manual update documented in README.
-- One \`mografy\` Skill lives in the source repository's outer \`.agents/skills/\` folder, with scene, storyboard, animation-principle, and project references. Codex reads it there; the root \`.claude/skills/mografy\` symlink points Claude to the same folder. Root \`CLAUDE.md\` also imports the shared Skill. Never create Skill folders inside animation subprojects.
-- Animation code belongs only in scene modules. The Server must never import or evaluate scenes in Node. Do not introduce GSAP, SVG scene layers, or resvg.
-- Application writes to projects use \`queueProjectWrite\` in \`packages/server/src/project.ts\` and \`atomicWrite\`. The player and exports share \`@mografy/runtime\`, including \`post.ts\`.
-- Run \`pnpm check\` and \`pnpm test:browser\` after repository changes. For scene work, use \`npx mografy check [project]\`, \`npx mografy review [project]\`, and inspect the PNGs.
-
-Adapt storyboards to the actual scene and assets. Write plans and prompts in English. Codex invokes image generation; Claude invokes Artifacts when exposed, with a standalone local HTML/Canvas fallback in Claude Code. Read the corresponding local references for details.
-`;
-  const references = Object.fromEntries(Object.entries({ ...SKILL_REFERENCES,
-    'built-in-components.md': BUILTIN_COMPONENTS_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'intro.md': INTRO_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'camera-transitions.md': CAMERA_TRANSITIONS_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'cjk-typography.md': CJK_TYPOGRAPHY_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'three-d.md': THREE_D_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'music.md': MUSIC_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'product-walkthrough.md': WALKTHROUGH_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'ui-stage.md': UI_STAGE_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'templates.md': TEMPLATES_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'examples.md': EXAMPLES_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'video-compression.md': VIDEO_COMPRESSION_REFERENCE.replaceAll('__REPOSITORY__', repository),
-    'project.md': project,
-  })
-    .map(([name, contents]) => [`references/${name}`, contents]));
-  return {
-    mografy: { 'SKILL.md': SKILL, ...references },
-  };
+  const references = Object.fromEntries(Object.entries(REFERENCES).map(([name, text]) =>
+    [`references/${name}`, text.replaceAll('__REPOSITORY__', repository).replaceAll('__INTRODUCTION__', introduction)]));
+  return { mografy: { 'SKILL.md': SKILL, ...references } };
 }
-
-const GITHUB_SOURCE = 'https://github.com/mografy/mografy/blob/main';
 
 /** Published guidance is identical in every checkout and never embeds a developer's disk paths. */
 export function sharedSkillFiles(_repository?: string) {
@@ -167,88 +51,22 @@ export function sharedSkillFiles(_repository?: string) {
   return files;
 }
 
-const LEGACY_USER_SCOPE_GUIDE = `# Mografy project instructions
-
-This folder is a Mografy project. Animation belongs only in scene modules; \`mografy.json\` contains settings. Use synchronous \`renderFrame(ctx, time, params)\` with deterministic seeking. Scenes run only in the browser; do not introduce GSAP, SVG scene layers, resvg, clocks, or previous-frame state. Use \`ctx.draw\` for common drawing and \`ctx.withCanvas\` for native Canvas scopes.
-
-Read the external \`mografy\` Skill at \`~/.agents/skills/mografy/SKILL.md\` in Codex or \`~/.claude/skills/mografy/SKILL.md\` in Claude Code. Its local references contain the scene contract and animation principles. For shot planning, use the external \`mografy-storyboard\` Skill in the same host directory. Codex uses image generation; Claude uses Artifacts when available, otherwise a standalone HTML/Canvas preview. Write plans and prompts in English and save project-specific boards under \`storyboards/\`.
-
-Never create Skill folders inside this project. If the external Skills are missing, run \`pnpm build\` and \`pnpm sync:skills\` from the Mografy source repository to install them.
-
-Open the player with \`mografy dev\`. After scene edits, run \`mografy check\` and \`mografy review\`, then inspect the generated PNGs. Export with \`mografy export --format mp4|lottie|svga\` when requested.
-`;
-
-const LEGACY_SHARED_PROJECT_GUIDE = `# Mografy project instructions
-
-This folder is a Mografy animation project. Animation belongs only in scene modules; \`mografy.json\` contains settings. Use synchronous \`renderFrame(ctx, time, params)\` with deterministic seeking. Scenes run only in the browser; do not introduce GSAP, SVG scene layers, resvg, clocks, or previous-frame state. Use \`ctx.draw\` for common drawing and \`ctx.withCanvas\` for native Canvas scopes.
-
-Codex and Claude read the same Skills from the Mografy source repository's outer \`.agents/skills/\` folder. Read \`mografy/SKILL.md\` and its local references before scene work. For shot planning, also read \`mografy-storyboard/SKILL.md\`. The shared Skill root is linked below; do not create Skill copies inside animation projects or install duplicate host-specific folders.
-
-Codex uses image generation; Claude uses Artifacts when available, otherwise a standalone HTML/Canvas preview. Write plans and prompts in English and save project-specific boards under \`storyboards/\`.
-
-Open the player with \`mografy dev\`. After scene edits, run \`mografy check\` and \`mografy review\`, then inspect the generated PNGs. Export with \`mografy export --format mp4|lottie|svga\` when requested.
-`;
-
-function legacySharedProjectGuide(repository: string) {
-  return LEGACY_SHARED_PROJECT_GUIDE + `
-Shared Skills: [Mografy](${repository}/.agents/skills/mografy/SKILL.md) and [Storyboards](${repository}/.agents/skills/mografy-storyboard/SKILL.md). If missing, run \`pnpm build\` and \`pnpm sync:skills\` from \`${repository}\`.
-`;
-}
-
-
-
-function previousProjectGuide(guide: string, repository: string) {
+function skillPointer(guide: string, source: string) {
   return guide + `
-Shared Skill: [Mografy](${repository}/.agents/skills/mografy/SKILL.md). If missing, run \`pnpm build\` and \`pnpm sync:skills\` from \`${repository}\`.
-`;
-}
-
-function isPreviousProjectPointer(contents: string) {
-  const match = contents.match(/\nShared Skill: \[Mografy\]\((.+)\/\.agents\/skills\/mografy\/SKILL\.md\)\. If missing, run/);
-  if (!match) return false;
-  return [GUIDE, PREVIOUS_GUIDE].some(guide => {
-    const previous = previousProjectGuide(guide, match[1]!);
-    return contents === previous || contents === previous.replaceAll('mp4|webm|lottie|svga', 'mp4|lottie|svga');
-  });
-}
-
-/** The pointer to the Skill that ends every project's AGENTS.md. */
-function skillPointer(guide: string, source: string, owner: string) {
-  return guide + `
-Shared Skill: [Mografy](${source}/.agents/skills/mografy/SKILL.md). Inside a Mografy checkout, use its outer \`.agents/skills/mografy/\` folder. Elsewhere, install it once with \`npx skills add ${owner}/mografy -g\` (and keep it current with \`npx skills update\`).
+Shared Skill: [Mografy](${source}/.agents/skills/mografy/SKILL.md). In a Mografy checkout it is the outer \`.agents/skills/mografy/\` folder; in a workspace, install it with \`npx skills add mografy/mografy\` and keep it current with \`npx skills update\`.
 `;
 }
 
 export function projectGuide(_repository?: string) {
-  return skillPointer(GUIDE, GITHUB_SOURCE, 'mografy');
-}
-
-/** Earlier generated AGENTS.md files, replaced when found unedited: the guide before November 2026 under each pointer it shipped with. */
-function previousPointerGuides() {
-  return [
-    skillPointer(PREVIOUS_GUIDE, PREVIOUS_GITHUB_SOURCE, 'zz41354899'),
-    skillPointer(PREVIOUS_GUIDE, GITHUB_SOURCE, 'mografy'),
-    // Before the Skill was installed with the skills CLI.
-    PREVIOUS_GUIDE + `
-Shared Skill: [Mografy](${PREVIOUS_GITHUB_SOURCE}/.agents/skills/mografy/SKILL.md). For local work, use the current installation's outer \`.agents/skills/mografy/\` folder. If missing, run \`pnpm build\` and \`pnpm sync:skills\` from your Mografy checkout.
-`,
-  ].flatMap(guide => [guide, guide.replaceAll('mp4|webm|lottie|svga', 'mp4|lottie|svga')]);
+  return skillPointer(GUIDE, GITHUB_SOURCE);
 }
 
 /** Exact previous generated files, used only to remove the former separate storyboard Skill. */
 export function obsoleteStoryboardFiles(repository: string): Record<string, string> {
-  const files: Record<string, string> = { ...skillFilesWithRepositoryLinks(repository).mografy, 'SKILL.md': LEGACY_STORYBOARD_SKILL };
-  delete files['references/built-in-components.md'];
-  delete files['references/intro.md'];
-  delete files['references/camera-transitions.md'];
-  delete files['references/cjk-typography.md'];
-  delete files['references/three-d.md'];
-  delete files['references/music.md'];
-  delete files['references/product-walkthrough.md'];
-  delete files['references/ui-stage.md'];
-  delete files['references/templates.md'];
-  delete files['references/examples.md'];
-  for (const name of ['motion-design', 'film-architecture', 'performance', 'output', 'taste', 'layers', 'how-to-film', 'mcp']) delete files[`references/${name}.md`];
+  const current = skillFilesWithRepositoryLinks(repository).mografy;
+  const files: Record<string, string> = { 'SKILL.md': LEGACY_STORYBOARD_SKILL };
+  // The files that Skill shipped with; every other reference is newer and must not be removed.
+  for (const name of ['scene-authoring', 'storyboard', 'animation-principles', 'video-compression', 'project']) files[`references/${name}.md`] = current[`references/${name}.md`]!;
   files['references/project.md'] = files['references/project.md']!.replace(
     "One `mografy` Skill lives in the source repository's outer `.agents/skills/` folder, with scene, storyboard, animation-principle, and project references. Codex reads it there; the root `.claude/skills/mografy` symlink points Claude to the same folder. Root `CLAUDE.md` also imports the shared Skill. Never create Skill folders inside animation subprojects.",
     "Skills live in the source repository's outer `.agents/skills/` folder. Codex and Claude share `mografy` and `mografy-storyboard` there, with local references. Never create Skill folders inside animation subprojects. Root `AGENTS.md` routes Codex; root `CLAUDE.md` imports the same shared Skill for Claude.",

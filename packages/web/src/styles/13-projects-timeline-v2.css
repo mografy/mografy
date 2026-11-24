@@ -1,0 +1,50 @@
+/* Left panel and timeline v2. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- left panel and timeline v2: same language as the right panel */
+.projects { background: var(--ui); padding: 14px 12px 24px; gap: 12px; }
+.projects > header h2 { font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.projects > header .tl-icon { width: 26px; height: 26px; border-radius: 7px; }
+.project-search { padding: 0 6px 0 12px; gap: 9px; border: 1px solid var(--line); height: 36px; border-radius: 11px; background: var(--canvas); }
+.project-scope { display: flex; scrollbar-width: none; overflow-x: auto; margin: 0; gap: 2px; padding: 3px; border-radius: 11px; background: var(--canvas); border: 1px solid var(--line); }
+.project-scope button { flex: 1 1 0; height: 26px; border: 0; border-radius: 8px; font-size: 12px; font-weight: 500; }
+.project-scope button:hover { border: 0; }
+.project-scope button.on { background: var(--ui-raised); color: var(--text); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.35), inset 0 0 0 1px var(--line); }
+.project-current { display: grid; grid-template-columns: 1fr; padding: 8px; gap: 10px; border-radius: 14px; background: var(--ui-raised); border: 1px solid var(--line); }
+.project-current:hover:not(:disabled) { background: var(--ui-raised); border-color: var(--line-strong); }
+.project-current .thumb { width: 100%; border-radius: 9px; box-shadow: inset 0 0 0 1px var(--line); }
+.project-current .project-text { padding: 0 4px 2px; }
+.project-group { display: flex; align-items: center; gap: 8px; width: 100%; background: none; font-weight: 600; text-align: left; border-radius: 6px; padding: 6px 4px; color: var(--muted); font-size: 12px; letter-spacing: .02em; }
+.project-row { display: flex; align-items: center; gap: 10px; width: 100%; background: none; text-align: left; height: 34px; padding: 0 10px; border-radius: 9px; }
+.project-row:hover:not(:disabled) { background: var(--ui-raised); }
+.project-row.is-current { background: var(--ui-raised); box-shadow: inset 0 0 0 1px var(--line); }
+.project-row.is-current .project-name { font-weight: 600; }
+
+/* transport: grouped controls */
+.buttons { gap: 2px; padding: 3px; border-radius: 999px; background: var(--canvas); border: 1px solid var(--line); }
+.buttons button { width: 32px; height: 32px; border-radius: 50%; }
+.buttons button.play { width: 40px; height: 40px; margin: 0 4px; box-shadow: 0 4px 14px rgba(18,181,165,.35); }
+.tc { font-size: 24px; }
+.toggles { gap: 2px; padding: 3px; border-radius: 12px; background: var(--canvas); border: 1px solid var(--line); align-items: center; }
+.toggles .transport-toggle, .toggles .sound { height: 32px; border-radius: 9px; }
+.toggles .sound { background: none; padding: 0 10px; }
+.toggles .sound:hover { background: var(--ui-raised); }
+
+/* timeline */
+.timeline { padding: 6px 16px 14px; background: var(--ui); --row: 32px; --layer-row: 42px; --ruler: 26px; }
+.tl-tools { height: 34px; padding: 0 2px 0 4px; }
+.tl-count { font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.tl-zoom input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--signal) var(--fill, 50%), var(--ui-hover) var(--fill, 50%)); }
+.tl-zoom input[type=range]::-webkit-slider-thumb { background: #fff; border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.tl-names li, .tl-row { border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.tl-names li.tl-ruler-gap { height: var(--ruler); display: flex; align-items: center; padding: 0 12px; background: var(--canvas); }
+.tl-names button, .tl-names li > span { padding: 0 12px; font-size: 12.5px; }
+.tl-names li.layer.current { background: var(--ui-raised); box-shadow: inset 3px 0 0 var(--signal); }
+.tl-row.layer.current { background: color-mix(in srgb, var(--signal) 7%, transparent); }
+.tl-names li.current button { background: none; box-shadow: none; }
+.ruler span { top: 5px; font-size: 11px; }
+.solid span { line-height: calc(var(--layer-row) - 12px); font-size: 11.5px; font-weight: 500; }
+.tl-row:not(.layer) .solid span { line-height: calc(var(--row) - 12px); }
+.solid.current, .tl-row.layer .solid.current { outline: 2px solid var(--signal); outline-offset: 1px; box-shadow: 0 0 0 5px color-mix(in srgb, var(--signal) 18%, transparent); }
+.solid .handle::after { content: ""; position: absolute; left: 3px; width: 2px; border-radius: 1px; opacity: 0; transition: opacity .12s; top: 7px; bottom: 7px; background: rgba(255,255,255,.8); }
+.timeline-foot { padding: 0 4px; }
+@media (max-width: 1500px) { .transport .sel-summary { display: none; } }
+.transport .toggles { justify-self: end; width: max-content; }

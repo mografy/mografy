@@ -1,4 +1,4 @@
-import { EXPORT_MAX_FPS, EXPORT_PRESETS, isVideoFormat, WEBM_DEFAULTS, EXPORT_SIZES, MP4_PORTRAIT_SIZES } from '@mografy/core';
+import { EXPORT_MAX_FPS, EXPORT_PRESETS, isVideoFormat, WEBM_DEFAULTS, EXPORT_SIZES, MP4_PORTRAIT_SIZES } from '@mografy/core/browser';
 import type { AspectRatio, ExportFormat, ExportPreset, ExportSize, RenderSettings, SceneMeta } from '@mografy/core';
 
 export type ExportQuality = 'draft' | 'standard' | 'high' | 'custom';

@@ -26,7 +26,7 @@ export const zh = {
   searchProjects: '搜尋專案', clearSearch: '清除搜尋', all: '全部', savedIn: '會存在', results: (n: number) => `找到 ${n} 個專案`, noMatch: (q: string) => `找不到「${q}」`, noProjects: '還沒有專案。', createNamed: (q: string) => `建立專案「${q}」`, timelineHeight: '拖曳調整時間軸高度',
   sequenceHint: '這支影片還沒有分圖層，每一列是一整個鏡頭（整個畫面）。拖中間會在前後鏡頭之間滑動，拖兩端改和隔壁鏡頭的分界，其他鏡頭不會動。想單獨移動標題、卡片這些元素，請 AI 幫這支影片宣告圖層。', sequenceNote: '這是影片的一個鏡頭，包含整個畫面。拖曳只會移動它自己：空出來的地方顯示背景，跟別的鏡頭重疊時，後開始的那個會蓋在上面。要分開移動畫面裡的元素，請 AI 宣告圖層。', zoomIn: '放大時間軸', zoomOut: '縮小時間軸', shot: 'Shot', noShot: '在時間軸點一個 shot，就能輸入它的開始、結束和長度。', shotNote: '改結束或長度時，後面的 shot 跟著移；改開始只會動到前一個 shot。', layerColour: '圖層顏色', customColour: '自訂顏色', revertShots: '還原 shot 時間', addTransition: '轉場', addTransitionHint: '在播放頭新增轉場', transitionAdded: '已新增轉場', deleteTransition: '刪除轉場', dragShot: '拖曳兩端改時間：右端會帶著後面的 shot 移動，左端只調整和前一個 shot 的分界', dragTransition: '拖曳移動，拉兩端改長度，右鍵刪除', shotHint: '這個場景沒有宣告圖層：拖曳 shot 兩端改時間，或點一個 shot 在右側輸入數字；轉場可以拖曳、拉長，右鍵刪除。', undo: '復原', dragToReorder: '上下拖曳換順序', tlHint: '拖曳色塊兩端改時間，拖曳中間移動，上下拖曳名稱換順序，雙擊名稱重新命名。', noLayersHint: '這個場景還沒有宣告圖層，所以只能看 shots。請 Claude 用 timeline() 宣告圖層，就能在這裡拖曳修改。', changed: '已修改', hiddenPill: '已隱藏', copyPill: '複製品', boundTo: '綁定圖層：', dsMeta: '彈簧動態 · 6 種進出場', noChanges: '// 還沒有修改。這裡只會記下改過的值。', layerNote: '時間和動態都在時間軸上改：拖曳色塊兩端改入點、出點，拖曳中間整段移動；按右鍵可以換進場、出場，或重新命名、複製、刪除。',
   shortcuts: '鍵盤快捷鍵', close: '關閉', colours: '顏色', controls: '控制項', sceneSettings: '場景設定', sceneEmpty: '這個場景沒有可以調整的設定。請 AI 修改內容。', frameReview: '畫格檢查', on: '開', off: '關', newProject: '新增專案', projectName: '專案名稱', newProjectName: '新專案名稱', create: '建立', creating: '建立中…', cancel: '取消', openingShort: '開啟中…', needsFix: 'mografy.json 需要修正', openNow: '目前開啟', readyMade: '即用動畫', justNow: '剛剛', minAgo: (n: number) => `${n} 分鐘前`, hAgo: (n: number) => `${n} 小時前`,
-  groups: { component: '內建元件', recent: '最近開啟', library: '專案資料夾', example: '範例' } as Record<string, string>,
+  groups: { component: '內建元件', recent: '最近開啟', library: '專案資料夾', example: '範例', showcase: 'Showcase' } as Record<string, string>,
   keys: [
     ['時間軸', [['拖曳色塊', '整段移動'], ['拖曳兩端', '調整長度（只改停留）'], ['⌘ 拖曳', '暫時不吸附'], ['⌘ 滾輪', '縮放']]],
     ['圖層', [[', .', '移動 1 格'], ['⇧ , .', '移動 1 拍'], ['[ ]', '入點或出點對齊播放頭'], ['H', '隱藏或顯示'], ['⌘D', '複製圖層'], ['↵', '重新命名'], ['右鍵', '圖層選單']]],
@@ -172,7 +172,7 @@ export const zh = {
   shotsHeading: 'Shots',
   resizeNames: '拖曳調整圖層名稱欄寬度，雙擊還原',
   pjScope: '顯示哪些專案',
-  pjScopes: { recent: '最近', library: '我的', example: '範例', component: '元件' } as Record<string, string>,
+  pjScopes: { recent: '最近', library: '我的', example: '範例', showcase: 'Showcase', component: '元件' } as Record<string, string>,
   spTitle: '搜尋',
   spPlaceholder: '搜尋指令、shot、圖層、專案，或輸入時間（12、1:05）',
   spGroups: { time: '跳到時間', command: '指令', shot: 'Shot', layer: '圖層', project: '專案' } as Record<string, string>,
@@ -212,5 +212,11 @@ export const zh = {
   dsStart: '開始', dsLength: '長度', dsSceneMotion: '動畫參數', dsSceneMotionHelp: '場景開放的數值，像速度、強度、數量，跟檢視器裡的是同一組。',
   mcpPromptTitle: '用 AI 安裝 MCP', mcpPromptHelp: '複製這段提示詞，貼給 Claude Code 或 Codex，它會幫你把 Mografy MCP 裝好。路徑已自動帶入這個 Mografy 的位置。', mcpCopyPrompt: '複製提示詞', mcpCopied: '已複製', mcpOs: '作業系統', mcpFolder: 'Mografy 位置', mcpManual: '手動設定', mcpClaudeHelp: '在終端機執行一次就會記住。', mcpCodexHelp: '在終端機執行一次，之後每個 Codex 對話都能用。', mcpDesktop: 'Claude Desktop', mcpDesktopSetup: '在 Claude Desktop 打開 Settings → Developer → Edit Config，加入這段後重新啟動。command 填 node 的完整路徑（在終端機執行 node -p process.execPath 可以查到）。',
   mcpFolderHere: '這台電腦的 Mografy 位置，已自動帶入；要用別的資料夾可以直接改。', mcpFolderOther: '另一台電腦上的 Mografy 資料夾，輸入一次就會記住。', mcpFolderNeeded: '先輸入那台電腦上的 Mografy 資料夾，提示詞和指令就會出現。',
+  wsCopy: '複製', wsScopes: { recent: '最近', library: '專案', example: '範例', showcase: 'Showcase', template: '模板', component: '元件' } as Record<string, string>,
+  wsGroups: { library: '專案', example: '範例', showcase: 'Showcase', template: '模板', recent: '其他位置', component: '內建元件' } as Record<string, string>,
+  wsProjectsEmpty: '沒有專案', wsExamplesEmpty: '沒有範例', wsShowcase: '官網 Showcase', wsExamplesCommand: 'npx mografy add examples/ <影片名稱>', wsTemplatesEmpty: '沒有模板', wsTemplatesSite: '官網模板', wsTemplatesCommand: 'npx mografy add templates/ <模板名稱>', wsTemplateUse: '在終端機執行，用這個模板開一個新專案：',
+  wsShowcaseEmpty: '沒有 Showcase 影片', welcomeHint: '點擊左側的元件或專案，就會在這裡打開', welcomeTitle: '還沒有專案', welcomeBody: '在工作區資料夾打開 Claude Code 或 Codex，描述你想做的動畫，新影片會放進 projects/。也可以先建立一個空白專案，或從範例、模板開始。', welcomeWorkspace: '工作區', welcomeNew: '新增空白專案', welcomeProjects: '你的影片', welcomeExamples: '參考影片，從官網 Showcase 下載', welcomeTemplates: (n: number) => n ? `你安裝的 ${n} 個模板` : '模板，從官網挑選後安裝', welcomeComponents: '或先看看內建元件', welcomeAsk: '問 Claude 或 Codex：',
+  welcomePrompt: '用 Mografy 幫我做一支 15 秒的產品介紹動畫',
+  welcomeTitleSome: '從左邊選一支影片開始', welcomeBodySome: '你的影片在 projects/，參考影片在 examples/。在左邊點一支就會打開；也可以新增空白專案，或請 Claude、Codex 做一支新的。',
 };
 export type Dict = typeof zh;

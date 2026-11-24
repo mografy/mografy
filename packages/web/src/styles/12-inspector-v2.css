@@ -1,0 +1,112 @@
+/* Right panel v2: one look for every tab. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- right panel v2: one look for every tab
+   A pill tab bar, then blocks: a small label (with one quiet action on the right) over a rounded card. */
+.inspector-head { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.inspector-head .inspector-tabs { flex: 1; border-bottom: 0; gap: 2px; padding: 3px; border-radius: 11px; background: var(--canvas); border: 1px solid var(--line); }
+.inspector-tabs button { padding: 7px 4px; border: 0; border-radius: 8px; font-size: 12.5px; font-weight: 500; transition: background .15s, color .15s; }
+.inspector-tabs button[aria-selected=true] { background: var(--ui-raised); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.35), inset 0 0 0 1px var(--line); }
+.inspector-tabs button:hover:not([aria-selected=true]) { color: var(--text); background: none; }
+.inspector-content { display: flex; flex-direction: column; gap: 22px; padding: 16px 14px 32px; }
+.inspector-content > .section { padding: 0; border: 0; }
+.inspector .section > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 20px; margin: 0 0 8px; padding: 0 4px; }
+.inspector .section h2 { font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.inspector .section > header .text-button, .sec-link { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; margin-right: -6px; background: none; color: var(--muted); font-size: 11.5px; border-radius: 6px; text-decoration: none; }
+.inspector .section > header .text-button:hover:not(:disabled), .sec-link:hover:not(:disabled) { background: var(--ui-raised); color: var(--text); text-decoration: none; }
+.section-card { background: var(--ui-raised); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-width: 0; }
+.section-card input[type=text], .section-card input[type=number], .section-card textarea, .section-card select { background: var(--ui); border: 1px solid var(--line); border-radius: 8px; }
+.section-card input[type=text]:focus, .section-card input[type=number]:focus, .section-card textarea:focus { border-color: var(--signal); }
+.section-card .param { margin-bottom: 16px; }
+.section-card .param:last-child { margin-bottom: 0; }
+.section-card .param + .param { padding-top: 14px; border-top: 1px solid var(--line); }
+.section-card .param-head { font-size: 12.5px; color: var(--text); }
+.section-card .param.edited .param-head > span::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--signal); vertical-align: middle; }
+.section-card .panel-help, .sec-foot { margin: 0 0 12px; color: var(--faint); font-size: 11.5px; line-height: 1.55; }
+.sec-foot { margin: 12px 2px 0; }
+.section-card .empty { font-size: 12.5px; color: var(--muted); }
+.section-card .segmented { background: var(--ui); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+.section-card .segmented button { border-radius: 7px; padding: 6px 8px; font-size: 12px; }
+.section-card .segmented button.on { background: var(--ui-hover); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.section-card .number-control { grid-template-columns: minmax(0,1fr) 58px; }
+.section-card .number-control input[type=number] { text-align: right; padding: 5px 8px; font-variant-numeric: tabular-nums; }
+.section-card .color-control input { width: 30px; height: 30px; }
+.section-card .color-control input::-webkit-color-swatch { border-radius: 8px; }
+.section-card .color-control code { font-size: 12px; }
+.inspector input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--signal) var(--fill, 50%), var(--ui-hover) var(--fill, 50%)); }
+.inspector input[type=range]::-moz-range-progress { background: var(--signal); }
+.inspector input[type=range]::-webkit-slider-thumb { background: #fff; border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+
+/* scene: layer list and the selected layer */
+.lp-list { list-style: none; margin: -6px; padding: 0; display: grid; gap: 1px; max-height: 280px; overflow: auto; }
+.lp-list button { width: 100%; display: grid; grid-template-columns: 4px minmax(0,1fr) auto auto auto; align-items: center; gap: 10px; padding: 8px 10px 8px 8px; background: none; border-radius: 9px; text-align: left; font-size: 12.5px; }
+.lp-list button:hover:not(:disabled) { background: var(--ui-hover); }
+.lp-list i { width: 4px; height: 18px; border-radius: 2px; }
+.lp-list span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-list em { font-style: normal; font-size: 10.5px; color: var(--signal); }
+.lp-list svg { color: var(--faint); }
+.lp-list small { grid-column: 5; color: var(--faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+.lp-list .is-hidden span { color: var(--faint); text-decoration: line-through; }
+.inspector .layer-panel { padding: 0; display: grid; gap: 12px; }
+.inspector .lp-head { gap: 10px; }
+.inspector .lp-swatch { width: 30px; height: 30px; border-radius: 8px; }
+.inspector .lp-name { font-size: 14px; }
+.inspector .lp-palette { margin: 0; }
+.lp-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.lp-pills span { padding: 2px 8px; border-radius: 999px; font-size: 11px; color: var(--signal); background: rgba(18,181,165,.12); }
+.lp-facts { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; border-radius: 10px; overflow: hidden; background: var(--line); }
+.lp-facts div { padding: 8px 10px; background: var(--ui); }
+.lp-facts dt { color: var(--faint); font-size: 10.5px; }
+.lp-facts dd { margin: 2px 0 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.lp-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.lp-actions button { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; font-size: 12px; border-radius: 8px; background: var(--ui); border: 1px solid var(--line); color: var(--muted); }
+.lp-actions button:hover:not(:disabled) { color: var(--text); background: var(--ui-hover); }
+.lp-actions button.on, .lp-actions button[aria-pressed=true] { color: var(--warn); border-color: currentColor; }
+.inspector .layer-panel .sec-foot { margin: 0 2px; }
+
+/* subtitles inside a card */
+.section-card .subs { border-color: var(--line); background: var(--ui); border-radius: 10px; }
+.section-card .subs-tools button { border-radius: 8px; background: var(--ui); border: 1px solid var(--line); }
+.section-card .subs-tools button.on { background: var(--signal); color: #04201d; border-color: transparent; }
+
+/* effects */
+.section-card .effects-body > .panel-help { margin: 0 0 16px; }
+.section-card .effect-control { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.section-card .effect-head label { font-size: 12.5px; font-weight: 500; }
+.section-card .effect-value input[type=number] { width: 46px; padding: 4px 6px; }
+.section-card .effect-value .icon-button { background: none; }
+.section-card .effect-control p { color: var(--faint); }
+.section-card .effects-compare { padding-top: 0; border-top: 0; }
+.section-card .control-label { color: var(--text); font-size: 12.5px; }
+.section-card .effects-save { margin: 14px 0 0; color: var(--faint); }
+
+/* audio */
+.section-card .audio-file { display: grid; grid-template-columns: 38px minmax(0,1fr); grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; align-items: center; margin: 0 0 16px; padding: 10px; background: var(--ui); border: 1px solid var(--line); border-radius: 11px; }
+.section-card .audio-file-name { display: contents; }
+.section-card .audio-file-name svg { grid-row: 1 / 3; width: 38px; height: 38px; padding: 9px; border-radius: 9px; color: var(--signal); background: rgba(18,181,165,.12); }
+.section-card .audio-file-name span { font-size: 13px; font-weight: 500; }
+.section-card .audio-file-actions { grid-column: 2; padding: 0; margin: 0; gap: 12px; }
+.section-card .audio-file-actions .text-button { font-size: 11.5px; padding: 0; }
+.section-card .audio-volume .param-head .hint { font-variant-numeric: tabular-nums; }
+.section-card .beat-settings { margin-top: 14px; border-top: 1px solid var(--line); }
+.section-card .beat-settings > summary { padding: 12px 0 2px; }
+.section-card .beat-settings[open] > summary { padding-bottom: 10px; }
+.section-card .audio-empty { padding: 10px 4px 6px; }
+.section-card .audio-empty svg { width: 44px; height: 44px; padding: 10px; border-radius: 12px; color: var(--signal); background: rgba(18,181,165,.12); }
+
+/* frame review footer */
+.inspector-footer { padding: 10px 14px; background: var(--ui); }
+.inspector-footer .review-tools > summary { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: 0 -10px; border-radius: 9px; color: var(--muted); list-style: none; }
+.inspector-footer .review-tools > summary::-webkit-details-marker { display: none; }
+.inspector-footer .review-tools > summary::before { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
+.inspector-footer .review-tools[open] > summary::before { transform: rotate(45deg); }
+.inspector-footer .review-tools > summary:hover { background: var(--ui-raised); color: var(--text); }
+.inspector-footer .review-tools .panel-help { margin: 4px 0 10px; color: var(--faint); }
+.inspector-footer .review-button { width: 100%; padding: 8px; border-radius: 9px; background: var(--ui-raised); border: 1px solid var(--line); }
+.inspector-footer .review-button:hover:not(:disabled) { background: var(--ui-hover); }
+
+/* design tab blends into the same rhythm */
+.inspector .dsp { padding: 0; }
+.inspector .dsp-label > span { color: var(--muted); }
+.section-card .param:has(> .color-control) { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.section-card .param:has(> .color-control) .param-head { margin: 0; }
+.section-card .param > .color-control { flex-direction: row-reverse; padding: 3px 3px 3px 10px; border-radius: 10px; background: var(--ui); border: 1px solid var(--line); }
+.section-card .param > .color-control input { width: 26px; height: 26px; }

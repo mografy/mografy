@@ -4,15 +4,15 @@
 
 ## Add to a project
 
-The helpers are an optional extra, not part of the installed template. If the project already has `scenes/cinema.ts`, read and reuse that local copy; it may have been customized. Otherwise copy `extras/cinema/cinema.ts` from the current Mografy checkout into the project's `scenes/` folder, or download it from GitHub:
+The helpers are an optional extra, not part of the installed template. If the project already has `scenes/cinema.ts`, read and reuse that local copy; it may have been customized. Otherwise add it:
 
 ```sh
 npx mografy add cinema projects/<name>
 ```
 
-`npx mografy add` copies from this checkout's `extras/` folder, or from GitHub when it is missing, keeps any project file that differs from the extra (`--force` replaces it), and prints the import line. Without the `mografy` command, download the same files from `https://raw.githubusercontent.com/mografy/mografy/main/extras/cinema/`.
+`add` keeps any project file you changed (`--force` replaces it); [extras.md](extras.md#adding-one) covers where it copies from. Without the `mografy` command, download the same files from `https://raw.githubusercontent.com/mografy/mografy/main/extras/cinema/`.
 
-Import it locally (`import { plate, move, particleWipe } from './cinema.js'`). Copy `cinema-demo.ts` too only when the user wants the tour.
+Import it locally (`import { plate, move, particleWipe } from './cinema.js'`). `add cinema` also copies the tour as `scenes/cinema-demo.ts`; nothing imports it, so delete it unless the user wants the tour.
 
 ## Continuity first
 

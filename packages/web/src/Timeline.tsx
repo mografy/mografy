@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
-import { beatAt, beatTimes } from '@mografy/core';
-import { SHOT_COLOURS } from '@mografy/runtime';
+import { beatAt, beatTimes } from '@mografy/core/browser';
+import { FILM_COLOUR, shotColour } from '@mografy/runtime';
 import type { Snapshot, TimelineLayer } from '@mografy/core';
 import { ArrowsInLineHorizontalIcon } from '@phosphor-icons/react/dist/csr/ArrowsInLineHorizontal';
 import { KeyboardIcon } from '@phosphor-icons/react/dist/csr/Keyboard';
@@ -60,10 +60,10 @@ function shotTracks(snapshot: Snapshot, duration: number, t: T, ends?: number[] 
     const start = i ? shots[i - 1]!.end : 0;
     if (start >= duration) return;
     const name = shot.title || `Shot ${i + 1}`;
-    out.push({ id: `shot-${i}`, name, colour: SHOT_COLOURS[i % SHOT_COLOURS.length]!, kind: 'shot', solids: [{ name, start, end: ends ? shot.end : Math.min(shot.end, duration), stop: ends ? undefined : shot.stop }] });
+    out.push({ id: `shot-${i}`, name, colour: shotColour(i + 1), kind: 'shot', solids: [{ name, start, end: ends ? shot.end : Math.min(shot.end, duration), stop: ends ? undefined : shot.stop }] });
   });
   const transitions = list ?? snapshot.project?.review.transitions ?? [];
-  if (transitions.length) out.push({ id: 'transitions', name: t.transitions, colour: '#8a8f98', kind: 'transition',
+  if (transitions.length) out.push({ id: 'transitions', name: t.transitions, colour: FILM_COLOUR, kind: 'transition',
     solids: transitions.map((tr, i) => ({ name: tr.name ?? `${t.transitions} ${i + 1}`, start: tr.start, end: Math.min(tr.end, duration) })) });
   return out;
 }

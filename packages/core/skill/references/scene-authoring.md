@@ -109,7 +109,7 @@ All are pure functions of absolute time, imported from `@mografy/runtime`. Use t
 | --- | --- |
 | `pr(time, start, end)` | Map a time range to 0–1 (clamped). |
 | `lerp(a, b, p)`, `clamp(n, min?, max?)`, `colorLerp(a, b, p, 'srgb' or 'linear')`, `hashNoise(seed, ...n)` | Interpolation and seeded hashing. |
-| `ease.linear / inQuad / outCubic / inOutCubic / outExpo / outQuart / outQuint / inOutQuart / inOutSine` | Easing curves for p in 0–1. `outQuart` for entrances and moves, `outQuint` for word rises, `inOutCubic` for exits, `inOutSine` for loops and drifts. |
+| `ease.linear / inQuad / outCubic / inOutCubic / outExpo / outQuart / outQuint / inOutQuart / inOutSine` | Easing curves for p in 0–1. Entrances and moves use the springs above; `outQuint` is for word rises, `inOutCubic` for exits, `inOutSine` for loops and drifts. |
 | `at(time, start, end, curve?)` | Eased progress of a time window (default `ease.outCubic`). |
 | `win(time, a, b, c, d, enter?, exit?)` | In over [a, b], out over [c, d]: 0 → 1 → 0. |
 | `spring(time, start, duration?, bounce?)` | A spring from 0 to 1 that settles exactly on 1 by `start + duration × 1.6` (defaults 0.7 s, bounce 0.18; bounce 0 has no overshoot). |
@@ -187,38 +187,19 @@ mografy.pop();
 
 ## Built-in scene components
 
-New projects include `scenes/components.ts`, `scenes/social-components.ts`, and `scenes/showcase.ts`. Component functions are pure time functions that can be copied or edited; they do not add global runtime animation state.
-
-| Component | Additional options |
-| --- | --- |
-| `staggerText` | text,x,y,size?,color?,font?,start?,duration?,stagger?,lift? |
-| `typewriter` | text,x,y,size?,color?,font?,start?,duration?,caret? |
-| `popCard` | x,y,width,height,color?,radius?,start?,duration?,content?(ctx) |
-| `progressBar` | x,y,width,height?,target?,color?,track?,start?,duration? |
-| `pulseDots` | x,y,color?,diameter?,spacing?,period?,start? |
-| `logoReveal` | x,y,color?,ink?,width?,start?,duration? |
-| `socialCard` | x,y,color?,start?,name?,avatar?,caption? |
-| `youtubeSubscribe` | x,y,color?,start?,label?,subscribed? |
-| `aiChat` | x,y,color?,start?,prompt?,reply?,avatar? |
-| `likeBurst` | x,y,color?,start? |
-| `followBadge` | x,y,color?,start?,name?,avatar?,label?,following? |
-| `notificationToast` | x,y,color?,start?,message? |
-| `lowerThird` | x,y,color?,start?,name?,subtitle? |
-| `countUp` | x,y,color?,start?,value? |
-| `toggleSwitch` | x,y,color?,start? |
-| `audioWave` | x,y,color?,start?,bars? (3–40) |
+The sixteen built-in components (stagger text, typewriter, cards, counters, social widgets and more) are pure time functions you can copy into a scene; their functions, options and source files are in [built-in-components.md](built-in-components.md).
 
 ## Edit and visual-review workflow
 
-For a new animation, create the project first with `npx mografy init projects/<name>` (an internal command for agents; it starts as a blank stage with the component modules), then replace `scenes/main.ts` and open it with `npx mografy dev projects/<name>` so the running player switches to it. `npx mografy dev` only opens existing projects and fails on a folder without `mografy.json`. Do not tell the user to run `init` themselves.
+For a new animation, start from a reference film (`npx mografy add film-starter projects/<name>`) or create an empty project with `npx mografy init <name>` inside the workspace (it lands in `projects/<name>`), then replace `scenes/main.ts` and open it with `npx mografy dev projects/<name>` so the running player switches to it. `npx mografy dev` only opens existing projects and fails on a folder without `mografy.json`. Create the project yourself; do not ask the user to.
 
 1. Read `mografy.json`, the configured scene entry, and every local module it imports. Preserve the scene's existing visual language unless the user asks for a redesign.
 2. Edit scene source files directly. Keep animation data out of `mografy.json`; use it only for project, parameter, font, audio, render and review settings.
-3. Run `npx mografy check [project]`. This compiles the scene, trial-renders it in real Chromium and measures frame cost. Fix every reported error, and every `!` frame-cost warning, before judging the design.
+3. Run `npx mografy check --motion [project]`. This compiles the scene, trial-renders it in real Chromium, measures frame cost and finds choppy motion. Fix every reported error and every `!` warning before judging the design.
 4. Run `npx mografy review [project]`. Inspect every generated PNG in `renders/`, including raw stills, output frames, and transition strips. Do not approve a scene from source code or a successful build alone.
 5. Judge the images for clipping, overlap, safe margins, legibility, hierarchy, spacing, contrast, consistent easing, transition continuity (the followed object is visible in every frame of a transition strip, nothing jumps, no frame is empty), and whether each important message stays visible long enough. Review the beginning, end, configured key times, and dense transition intervals. Check both raw stills and final output frames when glow, grain, or motion sampling is used.
 6. Iterate on the scene and repeat check plus review until the visual problems are resolved. Use `npx mografy dev [project]` when the user should watch the live result.
-7. Export with `npx mografy export [project] --format mp4|webm|lottie|svga` when the user asks for a file. The command prints capture and encoding or packaging progress and writes the finished file under `renders/`. Press Ctrl+C to cancel a CLI export. When `npx mografy dev` is running, player exports also print progress in that terminal and can be stopped with `npx mografy export [project] --cancel`.
+7. Export only when the user asks for a file: `npx mografy export [project] --format mp4|webm|mov|lottie|svga` (or `--preset share|high|fast|master`). Presets, sizes and cancelling are in [output.md](output.md).
 
 ## Shots
 
@@ -243,6 +224,6 @@ Every project keeps its design and motion decisions in `style.md` at the project
 
 Values themselves stay in scene code. Define each fixed value (a colour, font family, easing curve, duration, tempo) once, in the scene module or in a shared module the scenes already import, and change it there rather than inline in one shot. Font files are registered under `fonts` in `mografy.json`.
 
-When `style.md` exists, read it before planning a storyboard or editing a scene. Precedence: the user's current request, then `style.md`, then this Skill's default motion and design guidance. The scene contract above (deterministic `renderFrame`, browser-only code, check and review) always applies. If a request conflicts with the style, follow the request for that change and ask whether the style should change too.
+When `style.md` exists, read it before planning a storyboard or editing a scene. It ranks below the user's current request and above the Skill's defaults (the full order is at the top of SKILL.md); the scene contract above (deterministic `renderFrame`, browser-only code, check and review) always applies. If a request conflicts with the style, follow the request for that change and ask whether the style should change too.
 
 What goes in: the film's idea, its design system (type roles, palette, the layout repeated shots share, the travelling motif), its motion character and tempo, and every decision the user states or approves as lasting ("always", "from now on", "use this for every shot"). What stays out: one-off fixes and your passing preferences. When a decision is a value, also change it in the scene code. Mark rules you wrote yourself, before the user confirmed them, so they can be overruled without discussion. During review, check the frames against the `style.md` rules as well as the general criteria. To reuse a style in another project, copy `style.md` and adapt the values in that project's scene code.

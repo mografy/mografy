@@ -14,7 +14,9 @@ export const VERSION: string = (() => {
 export function helpText(color: boolean) {
   const paint = (code: string) => (text: string) => color ? `\x1b[${code}m${text}\x1b[0m` : text;
   const teal = paint('38;2;18;181;165'), bold = paint('1'), dim = paint('2');
-  const row = (command: string, description: string) => `    ${command.padEnd(37)}${dim(description)}`;
+  const row = (command: string, description: string) => command.length < 37
+    ? `    ${command.padEnd(37)}${dim(description)}`
+    : `    ${command}\n    ${''.padEnd(37)}${dim(description)}`;
   const section = (title: string, rows: string[]) => `  ${bold(title)}\n${rows.join('\n')}`;
   return [
     `  ${teal('●')} ${bold('Mografy')} ${dim(VERSION)}\n  ${dim('Local Canvas animation for Claude Code and Codex. Claude creates. Mografy shows.')}`,
@@ -26,6 +28,11 @@ export function helpText(color: boolean) {
       row('mografy dev', 'Open the player: built-in animations and your projects'),
       row('mografy dev <project>', 'Open a project in the player'),
     ]),
+    section('Skill', [
+      row('.claude/skills/mografy, .agents/skills/mografy', 'In a workspace: the Mografy Skill that Claude Code, Codex and other agents read'),
+      row('npx skills add mografy/mografy', 'Install the Skill in this folder (add -g for every folder)'),
+      row('mografy mcp', 'MCP clients read the same Skill with the read_guide tool'),
+    ]),
     section('Review and export', [
       row('mografy check <project>', 'Compile and trial-render in Chromium'),
       row('mografy check --motion <project>', 'Also find jumps, hard starts and hard stops'),
@@ -36,9 +43,12 @@ export function helpText(color: boolean) {
     ]),
     section('Add', [
       row('mografy add', 'List the reference films, helpers and templates you can add'),
-      row('mografy add <film> [folder]', 'Copy a reference film into examples/ (outside a workspace: the library)'),
-      row('mografy add <helper...> [project]', 'Add helpers to a project: cinema, cjk, three, music, walkthrough, stage'),
-      row('mografy add <template...> [project]', 'Add Mografy Templates: hooks, captions, screens, end cards (9:16 and 16:9)'),
+      row('mografy add examples/ <film>', 'Download a reference film into examples/ (Stage films, mografy-intro)'),
+      row('mografy add showcase/ <film>', 'Download a showcase film into showcase/'),
+      row('mografy add projects/ <film>', 'Copy a film into projects/ to build on'),
+      row('mografy add templates/ <template...>', 'Install Mografy Templates into templates/'),
+      row('mografy add <helper...> [project]', 'Add helpers to a project: cinema, cjk, three, d3, p5, music, walkthrough, stage'),
+      row('mografy add <template...> <project>', 'Copy templates into a project, or start one: hooks, captions, screens, end cards'),
       row('', '--force replaces helper and template files you changed'),
     ]),
     section('Manage', [

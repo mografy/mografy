@@ -50,7 +50,7 @@ Preserve the six-package architecture, browser-only scene execution, shared runt
 - [x] Visually inspect fresh 1280 × 800 player/effects/export and 390 × 844 export captures in `artifacts/refactoring-completion/`.
 - [x] Rebuild Server and rerun workspace tests after preserving best-effort recent-history behavior for unavailable state directories.
 
-All refactoring stages in this plan are complete. Distribution, Windows support, additional scene workflows, and speculative export acceleration remain separate product work tracked in STATUS.md.
+All refactoring stages in this plan are complete. Distribution, Windows support, additional scene workflows, and speculative export acceleration remain separate product work, tracked in the [archived development log](archive/STATUS-2026.md) and, since v0.1.3, in [CHANGELOG.md](../CHANGELOG.md).
 
 ## Playback comparison 
 

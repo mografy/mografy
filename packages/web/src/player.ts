@@ -3,7 +3,7 @@
 // otherwise the browser clock does.
 import { apiPath } from './api.js';
 import { createSceneRuntime, renderOutputFrame } from '@mografy/runtime';
-import { sceneRuntimeKey } from '@mografy/core';
+import { sceneRuntimeKey } from '@mografy/core/browser';
 import type { SceneRuntime } from '@mografy/runtime';
 import type { ParameterValues, SceneProject } from '@mografy/core';
 import { AudioTrack } from './audio.js';

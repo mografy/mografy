@@ -1,8 +1,8 @@
 // Mografy CLI: read the command line and hand each command to its module.
 import { resolve } from 'node:path';
 import { sendApi } from '@mografy/core';
-import { createProject, ensureAgentFiles, findServer, installation, libraryDir, rememberProject, workspaceDir } from '@mografy/server';
-import { displayPath, workspaceRoot } from './paths.js';
+import { componentRoot, createProject, ensureAgentFiles, ensureComponentProjects, findActive, findServer, installation, libraryDir, rememberProject, workspaceDir } from '@mografy/server';
+import { displayPath, fromHome, workspaceRoot } from './paths.js';
 import { exportBatch, exportProject, projectsIn } from './export.js';
 import { updateInstallation } from './update.js';
 import { packageUpdate } from './package-update.js';
@@ -11,15 +11,16 @@ import { skillHint } from './skill-hint.js';
 import { addList, planAdd, runAdd } from './add.js';
 import { writeEditorConfig } from './templates.js';
 import { parse } from './options.js';
-import { fromHome, hasProject, implicitProject, resolveProjectArg } from './project-args.js';
+import { hasProject, implicitProject, resolveProjectArg } from './project-args.js';
 import { checkProject } from './commands/check.js';
 import { dev, openBrowser, switchActive } from './commands/dev.js';
 import { HELP, VERSION, helpText } from './commands/help.js';
 import { reviewProject } from './commands/review.js';
 import { setup } from './commands/setup.js';
 import { runMcp } from './mcp/index.js';
-import { insideFolder, installIntoProject, isWorkspace, updateProjectCopy, useProjectTools, workspaceProjectDir, writeWorkspace } from './project-install.js';
+import { fillWorkspace, insideFolder, installIntoProject, isWorkspace, updateProjectCopy, useProjectTools, workspaceProjectDir, writeWorkspace } from './project-install.js';
 import { readFile } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 export { displayPath } from './paths.js';
 export { openBrowser };
@@ -75,6 +76,9 @@ export async function main(argv = process.argv.slice(2)) {
       : configured
         ? resolve(configured)
         : await implicitProject(command);
+  // projects/.components is generated from the server template, not tracked in git: a command naming a built-in
+  // component (`npx mografy dev projects/.components/count-up`) before the player's first start creates it first.
+  if (command !== 'init' && !await hasProject(dir) && insideFolder(componentRoot(), resolve(dir))) await ensureComponentProjects();
 
   switch (command) {
     case 'dev': {
@@ -86,17 +90,22 @@ export async function main(argv = process.argv.slice(2)) {
           + `  Open the player:  mografy dev   (built-in animations and your projects)\n`
           + `  New animation:    ask Claude or Codex`);
       }
+      // A bare `dev` in a workspace that only found a built-in component (no film of yours yet) opens on the start screen.
+      const real = (path: string) => { try { return realpathSync(path); } catch { return resolve(path); } };
+      const welcome = !explicit && !configured && workspaceDir() !== undefined && insideFolder(real(componentRoot()), real(dir));
       // `npx mografy@latest` inside a project with its own older copy: move that copy to this version first.
       if (!explicit) await updateProjectCopy(workspaceDir() ?? dir);
       await refreshSkill(workspaceRoot);
       skillHint(dir);
       await ensureAgentFiles(dir);
       await rememberProject(dir);
+      const active = welcome ? await findActive() : undefined;
+      if (active) { console.log(`Mografy dev is already running: ${active.url}`); if (flags.open) openBrowser(active.url); return; }
       const running = await findServer(dir);
       if (running) { console.log(`Mografy dev is already running: ${running.url}`); if (flags.open) openBrowser(running.url); return; }
       const switched = await switchActive(dir).catch(() => undefined);
       if (switched) { console.log(`Opened the project in the current player: ${switched}`); if (flags.open) openBrowser(switched); return; }
-      return dev(dir, flags);
+      return dev(dir, flags, welcome);
     }
     // `mografy init [folder]`: a new project (agents use it too). From the npm package it makes or updates a workspace
     // instead, see initPackage.
@@ -154,11 +163,16 @@ async function initPackage(target: string) {
   const existed = isWorkspace(dir);
   const name = basename(resolve(dir));
   await writeWorkspace(dir, name);
-  console.log(existed ? `Updating the Mografy workspace ${fromHome(dir)}; your projects stay as they are.` : `Created the Mografy workspace ${fromHome(dir)}: projects/, examples/, templates/`);
+  console.log(existed ? `Updating the Mografy workspace ${fromHome(dir)}; your projects stay as they are.` : `Created the Mografy workspace ${fromHome(dir)}: projects/, showcase/, examples/, templates/`);
+  const added = await fillWorkspace(dir);
+  if (added.templates + added.examples)
+    console.log(`Added from the package, offline: ${added.templates} templates (templates/), ${added.examples} reference films (examples/)`);
   if (await installIntoProject(dir, name)) {
-    console.log(`\nMografy ${VERSION} and its Skill are installed in this workspace, not globally. Next:\n${cd(dir)}  npx mografy dev     open the player (or: npm run dev)\n`
+    console.log(`\nMografy ${VERSION} and its extras are installed in this workspace, not globally. Next:\n${cd(dir)}  npx mografy dev     open the player (or: npm run dev)\n`
       + `Then open Claude Code or Codex in the workspace folder (${fromHome(dir)}) and describe the animation; new films go into projects/.\n`
-      + `Reference films: npx mografy add (they go into examples/). To update later, run \`npx mografy@latest init\` in this folder.`);
+      + `Install the Mografy Skill separately, in the workspace folder: npx skills add mografy/mografy (add -g for every folder). It teaches Claude Code and Codex the workflow, rules and references.\n`
+      + `Using MCP instead? Connect \`npx mografy mcp\`: its read_guide tool serves the same Skill.\n`
+      + `Templates and reference films are already in templates/ and examples/; npx mografy add lists everything else. To update later, run \`npx mografy@latest init\` in this folder.`);
   }
 }
 

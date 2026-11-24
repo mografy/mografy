@@ -1,17 +1,18 @@
 // The tools `mografy mcp` offers. Each does what the matching CLI command does, through the same Project or player,
 // and answers with text for the model plus structured content for clients that read it.
 import { spawn } from 'node:child_process';
-import { access, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import {
   EXPORT_PRESETS, EXPORT_SIZES, aspectRatioSchema, MP4_PORTRAIT_SIZES, exportFormatSchema, exportPresetSchema, frameCostReport, isVideoFormat,
-  sharedSkillFiles, shotIssues, smoothnessReport, tempoIssues,
+  sharedSkillFiles, shotIssues, shotLabelIssues, smoothnessReport, tempoIssues,
 } from '@mografy/core';
 import type { ExportRequest, Snapshot } from '@mografy/core';
 import { createInLibrary, findServer, installation, listProjects } from '@mografy/server';
 import { switchActive } from '../commands/dev.js';
 import type { CheckResult, Hosts } from './hosts.js';
 import type { CallContext, Content, ToolResult } from './rpc.js';
+import { delay, exists } from '../util.js';
 
 type Args = Record<string, unknown>;
 interface Tool {
@@ -67,7 +68,7 @@ function describeSnapshot(snapshot: Snapshot) {
   };
 }
 
-function checkLines(snapshot: CheckResult, hasStyle: boolean) {
+function checkLines(snapshot: CheckResult, hasStyle: boolean, component = false) {
   const lines: string[] = [], warnings: string[] = [];
   if (!snapshot.scene || snapshot.error) throw new Error(snapshot.error?.message ?? 'The scene did not publish.');
   const { meta } = snapshot.scene;
@@ -77,6 +78,7 @@ function checkLines(snapshot: CheckResult, hasStyle: boolean) {
     if (issues.length) throw new Error(issues.join('\n'));
     lines.push(`✓ ${meta.shots.length} shot${meta.shots.length === 1 ? '' : 's'}`);
   }
+  if (!component) warnings.push(...shotLabelIssues(meta));
   if (meta.tempo) {
     const issues = tempoIssues(meta, snapshot.project?.audio);
     if (issues.length) warnings.push(...issues);
@@ -116,14 +118,13 @@ function exportRequest(args: Args): ExportRequest {
   };
 }
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const guideFiles = () => sharedSkillFiles().mografy as Record<string, string>;
 
 export function tools(hosts: Hosts): Tool[] {
   return [
     {
       name: 'list_projects', title: 'List projects',
-      description: 'List Mografy projects: recently opened ones, the projects library and the bundled examples. Use a project\'s dir (or its folder name) as the `project` argument of the other tools.',
+      description: 'List Mografy projects: in a workspace its projects/, showcase/ and examples/ folders, plus recently opened ones. Use a project\'s dir (or its folder name) as the `project` argument of the other tools.',
       inputSchema: { type: 'object', properties: { include_builtin: { type: 'boolean', description: 'Also list the sixteen bundled component projects (default false).' } } },
       annotations: { readOnlyHint: true },
       async run(args) {
@@ -148,14 +149,15 @@ export function tools(hosts: Hosts): Tool[] {
     },
     {
       name: 'check', title: 'Check',
-      description: 'Compile the scene and trial-render it in Chromium (mografy check): shot table, tempo, frame cost and style.md. With motion: true, also scan every frame for jumps, hard starts and hard stops (slower). Run after every scene change and fix every warning.',
+      description: 'Compile the scene and trial-render it in Chromium (mografy check): shot table, storyboard shot IDs and layer tag colours, tempo, frame cost and style.md. With motion: true, also scan every frame for jumps, hard starts and hard stops (slower). Run after every scene change and fix every warning.',
       inputSchema: { type: 'object', properties: { project: PROJECT, motion: { type: 'boolean', description: 'Also run the motion scan (mografy check --motion).' } } },
       annotations: { readOnlyHint: true },
       async run(args) {
         const dir = await hosts.resolve(args.project);
-        const hasStyle = dir.split(sep).includes('.components') || await access(join(dir, 'style.md')).then(() => true, () => false);
+        const component = dir.split(sep).includes('.components');
+        const hasStyle = component || await exists(join(dir, 'style.md'));
         return hosts.with(dir, async host => {
-          const { lines, warnings } = checkLines(await host.check(), hasStyle);
+          const { lines, warnings } = checkLines(await host.check(), hasStyle, component);
           let motion;
           if (args.motion === true) {
             const result = await host.motion();
@@ -226,7 +228,7 @@ export function tools(hosts: Hosts): Tool[] {
     },
     {
       name: 'create_project', title: 'Create project',
-      description: 'Create a new animation project with the starter scene in the projects library (a free folder name is picked from `name`). Returns its dir. Then write style.md and the scene, and check it.',
+      description: 'Create a new animation project with the starter scene in the projects folder (projects/ of the workspace; a free folder name is picked from `name`). Returns its dir. Then write style.md and the scene, and check it.',
       inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'Project name.' }, aspect_ratio: { type: 'string', enum: aspectRatioSchema.options, description: 'Default 16:9; 9:16 for a native portrait film.' } }, required: ['name'] },
       async run(args) {
         const name = str(args, 'name');

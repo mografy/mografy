@@ -1,0 +1,18 @@
+/* Panel layout rules kept from the removed Present mode (the slide rail itself is gone). Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- Present mode */
+/* Slides app layout: slide rail on the left, the stage, and a desk under it (title, rehearse, hold,
+   speaker notes). No inspector and no timeline: slides come from the scene's shots. */
+/* The highlight slides between the two modes; transform only, so it never triggers layout. */
+/* Side panels slide in when a mode or the projects toggle brings them back; .app clips the offset so it never adds a scrollbar. */
+.workspace > .inspector { animation: panel-in-right .22s ease-out both; }
+@keyframes panel-in-left { from { opacity: 0; transform: translateX(-10px); } }
+@keyframes panel-in-right { from { opacity: 0; transform: translateX(10px); } }
+.topbar-secondary { display: flex; align-items: center; gap: 7px; padding: 6px 12px; }
+.workspace.presenting { grid-template-columns: 232px minmax(0, 1fr); }
+/* Slide marks sit on the seconds ruler: the triangle's tip is the stop time, a faint line runs down the lane. */
+/* The playback menu floats in the middle of the stage; it steps aside while you watch. */
+/* Phones: icons only, so Export stays on screen; the labels remain for screen readers. */
+@media (max-width: 960px) { .workspace.presenting { grid-template-columns: 1fr; } }
+/* Phones: Start and Export HTML become icons so both stay on screen; their text remains the accessible name. */
+@media (max-width: 600px) { .topbar-end .topbar-secondary { gap: 0; padding: 6px 9px; font-size: 0; } }
+/* Touch screens have no hover: keep the menu visible, low on the stage. */

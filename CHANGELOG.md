@@ -12,6 +12,35 @@ npx mografy@latest init
 
 In a Git checkout of this repository, `npx mografy update --check` shows what would change and `npx mografy update` updates the checkout. Older checkouts without `update`: stop the player, run `git pull --ff-only` and `pnpm install` once, then reopen with `npx mografy dev`.
 
+## Mografy Triangulum v0.3.0 — 2026-11-24
+
+### Added
+
+- **`d3` extra: data visualisation with D3** — `npx mografy add d3 projects/<film>` copies `scenes/d3.ts`, a ten-second tour (`scenes/d3-demo.ts`: bars on a canvas axis, a line that draws itself and changes data, a donut, a force network, a turning globe) and D3 7.9.2 (ISC, about 0.23 MB) as `assets/d3.module.js`. D3 does the maths (scales, shapes, layouts, projections, colour, number formats) and everything is drawn on the frame's canvas from time: `axis` for canvas axes, `trimPoints` and `strokeReveal` for lines that draw themselves, `sweepArcs`, `tweenData` instead of d3-transition, `simulate` / `positionsAt` to record a force layout once and show any moment of it, `seeded` for D3's randomness, `loadData` for CSV/TSV/JSON in the project and `zhNumber` for 萬 and 億. Skill: `references/data-viz.md`.
+- **`p5` extra: p5.js sketches, frame by frame** — `npx mografy add p5 projects/<film>` copies `scenes/p5.ts`, an eight-second tour (`scenes/p5-demo.ts`) and the official, unmodified p5.js 2.4.0 (LGPL-2.1, about 1.2 MB) as `assets/p5.module.js` with its licence. p5's own draw loop never runs: `sketch()` reseeds `random()` and calls your `draw(p, t, frame)` for exactly the moment Mografy needs, so a sketch exports the same pixels on every run. Skill: `references/p5-sketch.md`, including how to port an existing sketch.
+- **Determinism test for library extras** — the render tests now draw the d3 and p5 tours in order, backwards, jumping and on a fresh page, and require identical pixels.
+
+### Fixed
+
+- **`npx mografy check` trial-renders again when no player is running** — opening a project only describes a build that has not passed before, so `check` without a player printed "Compiled and trial-rendered" without drawing a frame and missed errors such as `Math.random` or a throw in `renderFrame`. It now runs the trial before reporting.
+
+## Mografy Triangulum v0.1.3 — 2026-11-21
+
+### Changed
+
+- **The player starts on your workspace** — in a workspace with no film yet, `npx mografy dev` no longer opens a built-in component: the stage says to click a component or project on the left, and the sidebar always shows the workspace's `projects/`, `showcase/`, `examples/` and `templates/` folders (an empty one just says so). The built-in components stay in `projects/.components`, folded at the bottom.
+- **Templates and reference films come with `init`, offline** — the npm package carries every template and every reference film (the intro and the ten `stage-*` loops; identical font files are stored once, so they add about 1.3 MB), and `init` puts them in the workspace's `templates/` and `examples/` without a download. It only adds what is missing: a film folder you changed or a template file stays as it is. `npx mografy add <template...> projects/<name>` starts a film with templates as before. Showcase films still download when you add them.
+- **A showcase/ folder** — films from the website's showcase download into the workspace's new `showcase/` (`npx mografy add showcase/ <film>`), listed in the player under Showcase; `examples/` keeps the reference films.
+- **`add` takes the folder to install into** — the folder can come first: `npx mografy add examples/ <film>` puts a reference film in `examples/<film>`, `npx mografy add projects/ <film>` makes it a project of your own in `projects/<film>`, and `npx mografy add templates/ <template...>` installs templates. Any folder that is not a project works the same way, and the folder can still come last.
+- **Extras come with Mografy; the Skill is installed on its own** — the npm package now carries every extra (cinema, cjk with its fonts, three, music, walkthrough, stage), so `npx mografy add <extra> projects/<film>` works offline right after `init`. `init` no longer writes the Skill into the workspace: it prints `npx skills add mografy/mografy`, which installs it in that folder (`-g` only for every folder). The package is about 10.5 MB.
+- **Extras work like `shadcn add`** — every extra is in the package, and `npx mografy add <extra> projects/<film>` copies only what that film needs, listing each file it writes; the helper's tour (`scenes/<extra>-demo.ts`) comes with it and nothing imports it. A scene that imports an extra the project does not have yet now fails with the exact command to run (`"./cinema.js" is the Mografy extra cinema, which isn't in this project yet. Add it with: npx mografy add cinema projects/<film>`). The workspace `AGENTS.md` lists the extras and the command, and the guide line after `add` says how to install the Skill when it is missing.
+- **Small fixes** — a film started from templates titles its shots `S01 …`, `S02 …`; a showcase download under 1 MB shows its size in KB.
+- **The Skill is the full knowledge base** — new extras, configuration and developer references; export details moved into `output.md`; `init` and `--help` point to the Skill.
+
+### Fixed
+
+- **3D films no longer time out on their trial render** — the trial render's time limit is now 60 s instead of the 20 s given on 2026-10-20 (setup stays at 30 s, each frame at 120 s). The headless browser draws WebGL in software, and a Three.js film's first frames spend about 20 s compiling shaders, so a working 3D scene could be reported as an error.
+
 ## Mografy Triangulum v0.1.2 — 2026-11-21
 
 ### Changed
@@ -145,7 +174,7 @@ Video export rebuilt for speed, quality and Windows. See [After updating](#after
 - **Hardware encoding on every platform** — VideoToolbox on macOS; NVIDIA NVENC, Intel Quick Sync and AMD AMF on Windows; NVENC, VA-API and Quick Sync on Linux. Mografy tries each with a tiny test encode and uses the first that works; without one it encodes in software and says so. The finished export shows the encoder that wrote it, in the dialog and the terminal. VideoToolbox is measured; the Windows and Linux encoders are new and their quality setting is a first calibration, so please report how `fast` looks and how long it takes on your graphics card.
 - **GPU-drawn frames on Windows** (Direct3D 11), as on macOS (Metal). Elsewhere frames are drawn on the CPU.
 - **Advanced settings** — shutter angle (360° by default; 180° gives shorter, film-like motion blur), dither gradients (hides banding in soft gradients and glows), hardware quality (1–100), and Auto parallel workers. In `mografy.json`, `render.sampleWindow: "centred"` also places each frame's motion samples around its own time, in step with the audio. All settings are listed in [Configuration](docs/configuration.md#export-settings).
-- **`scripts/bench-export.ts`** — times exports and scores them (size, SSIM, VMAF) against a lossless reference. Results for this release are in [docs/STATUS.md](docs/STATUS.md).
+- **`scripts/bench-export.ts`** — times exports and scores them (size, SSIM, VMAF) against a lossless reference. Results for this release are in the [archived development log](docs/archive/STATUS-2026.md).
 
 ### Changed
 

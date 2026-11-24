@@ -4,7 +4,7 @@ The sixteen built-in animations are working scene references for authoring and s
 
 ## Source catalog
 
-The reusable implementations live in [components.ts](https://github.com/mografy/mografy/blob/main/packages/server/template/scenes/components.ts) and [social-components.ts](https://github.com/mografy/mografy/blob/main/packages/server/template/scenes/social-components.ts). Each animation has a complete entry under `packages/server/template/scenes/`:
+The reusable implementations live in [components.ts](https://github.com/mografy/mografy/blob/main/packages/server/template/scenes/components.ts) and [social-components.ts](https://github.com/mografy/mografy/blob/main/packages/server/template/scenes/social-components.ts). Each animation has a complete entry under `packages/server/template/scenes/` in a checkout; in a workspace read the installed copy, `projects/.components/<id>/scenes/` (the player creates it on first start):
 
 | Component | Entry | Function | Authoring reference |
 | --- | --- | --- | --- |
@@ -33,9 +33,32 @@ The reusable implementations live in [components.ts](https://github.com/mografy/
 - New projects receive the component modules and scene entries. Import the needed function from the project's local `scenes/components.ts` or `scenes/social-components.ts`. Preserve required imports, including brand geometry. Do not import files outside the animation project; compilation allows project-local modules and `@mografy/runtime` only.
 - Copy the useful motion and composition into the selected project's own scene modules. Adapt layout, copy, palette, scale, and timing to its brief. Keep pure time evaluation and isolated Canvas state; retain the project's existing assets and visual identity.
 - Use these examples to choose a motif in the storyboard and connect it to a concrete scene function. For a longer sequence with transitions and a brand ending, read [intro.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/intro.md).
-- Optional extras are not installed with Mografy; installation contains only the sixteen built-in components. They live in the repository's [extras/](https://github.com/mografy/mografy/blob/main/extras/) folder on GitHub and are copied into a project when a brief needs them: camera moves and transitions for film-style sequences ([camera-transitions.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/camera-transitions.md)), Chinese / Japanese typography with OFL fonts ([cjk-typography.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/cjk-typography.md)), Three.js 3D layers ([three-d.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/three-d.md)), contextual music generated from the film's cues ([music.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/music.md)), and product walkthroughs that redraw an app's screens as simplified cards ([product-walkthrough.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/product-walkthrough.md)).
+- Optional extras (cinema, cjk, three, d3, p5, music, walkthrough, stage) are not installed with Mografy; they are copied into a project when a brief needs them. [extras.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/extras.md) lists what each one is for and which reference to read.
 - Keep important subtitle params distinct from ordinary scene copy. The source entries may contain string params that are edited by an agent in source rather than shown in the subtitle inspector.
 
 ## Review
 
-Open an installed example with `npx mografy dev [project]`. After adapting it, run `npx mografy check [project]` and `npx mografy review [project]`; inspect actual frames at the entrance, extreme, settle, hold, and any loop reset. Verify text measurement, safe margins, clipping, contrast, and out-of-order seeking. The catalog is a source reference, not an acceptance result for a modified scene. Read [scene-authoring.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/scene-authoring.md) and [animation-principles.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/animation-principles.md) for the contract and motion direction.
+Open an installed example with `npx mografy dev [project]`. After adapting it, run `npx mografy check --motion [project]` and `npx mografy review [project]`; inspect actual frames at the entrance, extreme, settle, hold, and any loop reset. Verify text measurement, safe margins, clipping, contrast, and out-of-order seeking. The catalog is a source reference, not an acceptance result for a modified scene. Read [scene-authoring.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/scene-authoring.md) and [animation-principles.md](https://github.com/mografy/mografy/blob/main/.agents/skills/mografy/references/animation-principles.md) for the contract and motion direction.
+
+## Options
+
+New projects made from the built-in template include `scenes/components.ts`, `scenes/social-components.ts` and `scenes/showcase.ts`. Every function takes `(ctx, time, options)`; besides its position it accepts:
+
+| Component | Additional options |
+| --- | --- |
+| `staggerText` | text,x,y,size?,color?,font?,start?,duration?,stagger?,lift? |
+| `typewriter` | text,x,y,size?,color?,font?,start?,duration?,caret? |
+| `popCard` | x,y,width,height,color?,radius?,start?,duration?,content?(ctx) |
+| `progressBar` | x,y,width,height?,target?,color?,track?,start?,duration? |
+| `pulseDots` | x,y,color?,diameter?,spacing?,period?,start? |
+| `logoReveal` | x,y,color?,ink?,width?,start?,duration? |
+| `socialCard` | x,y,color?,start?,name?,avatar?,caption? |
+| `youtubeSubscribe` | x,y,color?,start?,label?,subscribed? |
+| `aiChat` | x,y,color?,start?,prompt?,reply?,avatar? |
+| `likeBurst` | x,y,color?,start? |
+| `followBadge` | x,y,color?,start?,name?,avatar?,label?,following? |
+| `notificationToast` | x,y,color?,start?,message? |
+| `lowerThird` | x,y,color?,start?,name?,subtitle? |
+| `countUp` | x,y,color?,start?,value? |
+| `toggleSwitch` | x,y,color?,start? |
+| `audioWave` | x,y,color?,start?,bars? (3–40) |

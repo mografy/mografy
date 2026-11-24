@@ -1,4 +1,4 @@
-import { isVideoFormat } from '@mografy/core';
+import { isVideoFormat } from '@mografy/core/browser';
 import type { ExportSize, RenderSettings, RenderStatus, Snapshot } from '@mografy/core';
 
 export interface ExportJobPreview { snapshot: Snapshot; size: ExportSize; settings: RenderSettings }

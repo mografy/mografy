@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { BracketsCurlyIcon } from '@phosphor-icons/react/dist/csr/BracketsCurly';
 import { FilmStripIcon } from '@phosphor-icons/react/dist/csr/FilmStrip';
 import { StackIcon } from '@phosphor-icons/react/dist/csr/Stack';
-import { EXPORT_MAX_FPS, isVideoFormat, EXPORT_SIZES, MP4_PORTRAIT_SIZES, mp4Preset, outputFrameCount, SVGA_FRAME_RATES } from '@mografy/core';
+import { EXPORT_MAX_FPS, isVideoFormat, EXPORT_SIZES, MP4_PORTRAIT_SIZES, mp4Preset, outputFrameCount, SVGA_FRAME_RATES } from '@mografy/core/browser';
 import type { ExportSize, RenderSettings, Snapshot } from '@mografy/core';
 import { AspectRatioToggle } from './AspectRatioToggle.js';
 import { ExportPreview } from './ExportPreview.js';

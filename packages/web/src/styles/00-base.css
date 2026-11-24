@@ -1,0 +1,57 @@
+/* Reset, tokens, buttons and inputs shared by every panel. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/*
+  Mografy player.
+  The interface recedes like a grading suite: neutral greys so the animation's colours read true.
+  One signal colour, the teal of the Mografy ribbon, marks "now": the playhead and the play button.
+*/
+:root {
+  /* Mografy Pro Triangulum palette (design system "mografy"): near-black canvas, one teal brand colour for "now". */
+  color-scheme: dark;
+  font: 14px/1.5 "Avenir Next", Figtree, -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", Inter, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased; --radius-2xl: 24px; --radius-xl: 14px; --radius-lg: 12px; --brand-line: rgba(79, 214, 199, .35); --brand-hover: #2cc5b5; --brand-border: #0ca696;
+  --radius-m: 10px;
+  --radius-s: 6px;
+  --warn: #e9c46a;
+  --error: #ff8269;
+  --signal-text: #4fd6c7;
+  --signal-ink: #04201c;
+  --signal: #12b5a5;
+  --canvas: #15181b;
+  --ui: #1d2124;
+  --ui-raised: #272b2f;
+  --ui-hover: #31363b;
+  --surround: #0d0f11;
+  --line: rgba(255, 255, 255, .11);
+  --line-strong: rgba(255, 255, 255, .2);
+  --text: #f6f7f4;
+  --muted: #b3b9bd;
+  --faint: #8f979c;
+  --signal-tint: #10342f;
+  --stage-raised: #1a1d20;
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; background: var(--canvas); color: var(--text); }
+button, input, select, textarea { font: inherit; color: inherit; }
+code, pre, kbd, .tc, .tc-total, .version { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+code { font-size: 12.5px; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+::selection { background: rgba(18, 181, 165, .35); }
+
+button {
+  background: var(--ui-raised); border: 1px solid transparent; border-radius: var(--radius-s);
+  padding: 6px 12px; cursor: pointer; transition: background .12s;
+}
+button:hover:not(:disabled) { background: var(--ui-hover); }
+button:disabled { opacity: .4; cursor: default; }
+button.primary { background: var(--text); color: var(--ui); font-weight: 600; }
+button.primary:hover:not(:disabled) { background: #fff; }
+.text-button { background: none; padding: 0; color: var(--muted); font-size: 12.5px; }
+.text-button:hover:not(:disabled) { background: none; color: var(--text); text-decoration: underline; }
+input[type=text], input[type=number], textarea {
+  width: 100%; background: var(--ui-raised); border: 1px solid transparent; border-radius: var(--radius-s); padding: 6px 9px;
+}
+input[type=text]:focus, input[type=number]:focus, textarea:focus { border-color: var(--faint); outline: none; }
+textarea { display: block; resize: vertical; min-height: 58px; max-height: 240px; }
+input[type=number] { font-variant-numeric: tabular-nums; }
+
+.app { zoom: var(--text-scale, 1); display: grid; grid-template-rows: auto auto auto auto 1fr; height: 100%; overflow-x: clip; }

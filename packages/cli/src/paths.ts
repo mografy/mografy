@@ -7,16 +7,20 @@ import { installation, isProject, workspaceDir } from '@mografy/server';
  * (found from the current folder), else the installation's own folder. See `workspaceDir` in @mografy/server.
  */
 export const workspaceRoot = workspaceDir() ?? installation.root;
-/** Keep terminal output useful without exposing the user's absolute home path. */
+/** `target` relative to `base` when it is `base` itself ('') or inside it; otherwise undefined. */
+export function within(base: string, target: string) {
+  const path = relative(resolve(base), resolve(target));
+  return path === '' || (path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path)) ? path : undefined;
+}
+/** Show a path from the user's home (`~/…`), so it is clear which checkout or repository it is in; else absolute. */
+export function fromHome(value: string) {
+  const path = within(homedir(), value);
+  return path === undefined ? resolve(value) : path === '' ? '~' : join('~', path);
+}
+/** Keep terminal output useful without exposing the user's absolute home path: workspace-relative, else from home. */
 export function displayPath(value: string) {
-  const absolute = resolve(value);
-  const fromWorkspace = relative(workspaceRoot, absolute);
-  if (fromWorkspace === '') return '.';
-  if (fromWorkspace !== '..' && !fromWorkspace.startsWith(`..${sep}`) && !isAbsolute(fromWorkspace)) return fromWorkspace;
-  const fromHome = relative(homedir(), absolute);
-  if (fromHome === '') return '~';
-  if (fromHome !== '..' && !fromHome.startsWith(`..${sep}`) && !isAbsolute(fromHome)) return join('~', fromHome);
-  return absolute;
+  const path = within(workspaceRoot, value);
+  return path === undefined ? fromHome(value) : path === '' ? '.' : path;
 }
 
 export async function requireProject(dir: string) {

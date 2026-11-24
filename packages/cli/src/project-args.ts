@@ -1,15 +1,11 @@
 // Which project a command means, from its arguments and the current folder.
-import { homedir } from 'node:os';
-import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { isAbsolute, resolve } from 'node:path';
 import { defaultProject, isProject as hasProject, libraryProject } from '@mografy/server';
-import { displayPath, workspaceRoot } from './paths.js';
+import { displayPath, fromHome, within, workspaceRoot } from './paths.js';
 
 export { hasProject };
 
-function isInsideWorkspace(value: string) {
-  const fromWorkspace = relative(workspaceRoot, resolve(value));
-  return fromWorkspace === '' || (fromWorkspace !== '..' && !fromWorkspace.startsWith(`..${sep}`) && !isAbsolute(fromWorkspace));
-}
+const isInsideWorkspace = (value: string) => within(workspaceRoot, value) !== undefined;
 
 /**
  * Bare project commands are convenient inside Mografy's own workspace, where
@@ -24,12 +20,6 @@ export async function implicitProject(command: string) {
   if (isInsideWorkspace(cwd)) return defaultProject(cwd);
   if (command === 'dev') return libraryProject();
   throw new Error(`No mografy.json found in ${displayPath(cwd)}. Run \`mografy ${command} <project>\` or change into a Mografy project.`);
-}
-
-/** Show a path from the user's home, so it is clear which checkout or repository it is in. */
-export function fromHome(value: string) {
-  const path = relative(homedir(), resolve(value));
-  return path && !path.startsWith('..') && !isAbsolute(path) ? join('~', path) : resolve(value);
 }
 
 /**

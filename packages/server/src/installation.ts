@@ -138,6 +138,11 @@ export const referenceFilmsDir = () => {
   const workspace = process.env.MOGRAFY_HOME ? undefined : workspaceDir();
   return workspace ? join(workspace, 'examples') : libraryDir();
 };
+/** Where `mografy add <showcase film>` puts a film from the website's showcase: showcase/ in a workspace, else the library. */
+export const showcaseFilmsDir = () => {
+  const workspace = process.env.MOGRAFY_HOME ? undefined : workspaceDir();
+  return workspace ? join(workspace, 'showcase') : libraryDir();
+};
 /** Folders the player lists as examples: the installation's examples/ and, in a workspace, its examples/. */
 export const exampleDirs = () => {
   const workspace = workspaceDir();

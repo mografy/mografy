@@ -1,4 +1,4 @@
-import { isVideoFormat } from '@mografy/core';
+import { isVideoFormat } from '@mografy/core/browser';
 import { useEffect, useRef, useState } from 'react';
 import { CheckIcon } from '@phosphor-icons/react/dist/csr/Check';
 import { DownloadSimpleIcon } from '@phosphor-icons/react/dist/csr/DownloadSimple';

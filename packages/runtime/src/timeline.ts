@@ -299,6 +299,10 @@ export function shotWarp(shots: readonly { end: number; stop?: number | undefine
 
 /** Track colours for shot layers, in shot order. */
 export const SHOT_COLOURS: readonly string[] = ['#5fa37a', '#c2668a', '#5b9bd5', '#9a7bd0', '#d4a24c', '#4fb0a5', '#c98a5a', '#8a8f98'];
+/** The grey for layers under the whole film (background, grain, a camera bed). */
+export const FILM_COLOUR = SHOT_COLOURS[7]!;
+/** The tag colour of shot `n` (1 for S01): seven colours in turn, so neighbouring shots differ and none is the film grey. */
+export const shotColour = (n: number) => SHOT_COLOURS[((Math.max(1, Math.floor(n)) - 1) % 7)]!;
 
 export interface ShotSequence {
   duration: number;
@@ -316,7 +320,7 @@ export function shotSequence(shots: readonly { end: number; stop?: number | unde
   if (!shots.length) return null;
   const declared: LayerDeclaration[] = shots.map((shot, i) => {
     const start = i ? shots[i - 1]!.end : 0;
-    return { id: `shot-${i + 1}`, name: shot.title || `Shot ${i + 1}`, in: start, out: Math.max(start + 1 / 30, Math.min(shot.end, duration)), colour: SHOT_COLOURS[i % SHOT_COLOURS.length]!, source: `shot ${i + 1}` };
+    return { id: `shot-${i + 1}`, name: shot.title || `Shot ${i + 1}`, in: start, out: Math.max(start + 1 / 30, Math.min(shot.end, duration)), colour: shotColour(i + 1), source: `shot ${i + 1}` };
   });
   const tl = timeline(declared, edits, options);
   const index = new Map(declared.map((d, i) => [d.id, i]));

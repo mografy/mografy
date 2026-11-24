@@ -23,6 +23,8 @@ export interface StartOptions {
   port?: number; quiet?: boolean;
   /** Serve the player from source with Vite hot reload when Vite is installed (default). false serves dist/. */
   hmr?: boolean;
+  /** No project was chosen: show the start screen until one is opened (`projectDir` is only a placeholder). */
+  welcome?: boolean;
 }
 interface PlayerDevServer { handle(request: IncomingMessage, response: ServerResponse): Promise<boolean>; ownsUpgrade(request: IncomingMessage): boolean; close(): Promise<void> }
 /** Vite is a development dependency of the player: present in a checkout after pnpm install, absent otherwise. */
@@ -45,6 +47,7 @@ export interface RunningServer {
 export async function startServer(projectDir: string, options: StartOptions = {}): Promise<RunningServer> {
   await ensureComponentProjects();
   const session = await ProjectSession.open(projectDir);
+  if (options.welcome) session.project.welcome = true;
   const sockets = new WebSocketServer({ noServer: true, maxPayload: 4096 });
   const send = (socket: WebSocket, event: ServerEvent) => { if (socket.readyState === WebSocket.OPEN && socket.bufferedAmount < 4 << 20) socket.send(JSON.stringify(event)); };
   session.on('event', event => { for (const socket of sockets.clients) send(socket, event); });

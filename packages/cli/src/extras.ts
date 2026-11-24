@@ -1,75 +1,29 @@
-// `mografy add <helper>`: copy an optional helper (cinema, cjk, three, music, walkthrough, stage) into a project.
-// Extras are not part of the installed template. They come from this checkout's extras/ folder,
-// or from GitHub when the folder is missing, so an installation stays at the sixteen built-in components.
+// `mografy add <helper>`: copy an optional helper (cinema, cjk, three, d3, p5, music, walkthrough, stage) into a project.
+// Extras are not part of the project template. They come from the checkout's or workspace's extras/ folder, else the
+// npm package's own extras/ (installed by init), else GitHub, so a project gets only the helpers it asks for.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { repoFile } from './github.js';
+import { EXTRAS } from '@mografy/core';
+import type { ExtraFont } from '@mografy/core';
+import { installation } from '@mografy/server';
+import { exists, repoFile } from './github.js';
 import { displayPath } from './paths.js';
+import { SKILL_INSTALL, skillLocations } from './skill-hint.js';
 
-interface FontEntry { family: string; path: string; weight: number }
-export interface Extra {
-  summary: string;
-  /** [source under extras/, destination in the project]. */
-  files: [string, string][];
-  /** Registered under `fonts` in mografy.json when missing. */
-  fonts?: FontEntry[];
-  reference: string;
-  next: string;
-}
-export const EXTRAS: Record<string, Extra> = {
-  cinema: {
-    summary: 'Camera moves on stills, transitions and atmosphere',
-    files: [['cinema/cinema.ts', 'scenes/cinema.ts']],
-    reference: 'camera-transitions.md',
-    next: "import { plate, move, crossfade, iris, particleWipe, drift } from './cinema.js';",
-  },
-  cjk: {
-    summary: 'Chinese and Japanese typography, vertical text and two Noto CJK subsets (about 9.5 MB)',
-    files: [
-      ['cjk/cjk.ts', 'scenes/cjk.ts'],
-      ['cjk/fonts/NotoSansCJKtc-Medium-subset.otf', 'assets/NotoSansCJKtc-Medium-subset.otf'],
-      ['cjk/fonts/NotoSerifCJKtc-Bold-subset.otf', 'assets/NotoSerifCJKtc-Bold-subset.otf'],
-      ['cjk/fonts/OFL.txt', 'assets/OFL-NotoCJK.txt'],
-    ],
-    fonts: [
-      { family: 'Noto Sans CJK TC', path: 'assets/NotoSansCJKtc-Medium-subset.otf', weight: 500 },
-      { family: 'Noto Serif CJK TC', path: 'assets/NotoSerifCJKtc-Bold-subset.otf', weight: 700 },
-    ],
-    reference: 'cjk-typography.md',
-    next: "import { cjkText, verticalText, CJK_SANS, CJK_SERIF } from './cjk.js';",
-  },
-  three: {
-    summary: '3D layers with Three.js r186 (about 0.8 MB)',
-    files: [['three/three.ts', 'scenes/three.ts'], ['three/three.module.js', 'assets/three.module.js'], ['three/LICENSE-three.txt', 'assets/LICENSE-three.txt']],
-    reference: 'three-d.md',
-    next: "import { prepareStage, stage, orbit, studioLight } from './three.js';",
-  },
-  music: {
-    summary: 'Contextual score generator (Python 3 with numpy, ffmpeg for MP3)',
-    files: [['music/score.py', 'music-src/score.py'], ['music/music-example.json', 'music-src/music.json']],
-    reference: 'music.md',
-    next: 'Write music-src/music.json from the film, then: python3 music-src/score.py music-src/music.json assets/music.mp3',
-  },
-  walkthrough: {
-    summary: 'Product walkthroughs: redrawn app screens, cameras, cursor and taps',
-    files: [['walkthrough/walkthrough.ts', 'scenes/walkthrough.ts']],
-    reference: 'product-walkthrough.md',
-    next: "import { createKit, camAt, withCamera, cursorAt, drawCursor } from './walkthrough.js';",
-  },
-  stage: {
-    summary: 'Product UI loops: a script over state, windows and phones, placeholder lines, rolling numbers, looks',
-    files: [['stage/stage.ts', 'scenes/stage.ts']],
-    reference: 'ui-stage.md',
-    next: "import { play, wait, set, click, tap, type, focus, mark, withStage, createKit, look, pin } from './stage.js';",
-  },
-};
+export { EXTRAS } from '@mografy/core';
+export type { Extra } from '@mografy/core';
 
 export function extrasList() {
   const width = Math.max(...Object.keys(EXTRAS).map(name => name.length));
   return Object.entries(EXTRAS).map(([name, extra]) => `  ${name.padEnd(width)}  ${extra.summary}`).join('\n');
 }
 
-const source = (workspaceRoot: string, path: string) => repoFile(workspaceRoot, `extras/${path}`);
+const source = async (workspaceRoot: string, path: string) => {
+  const packaged = join(installation.root, 'extras', ...path.split('/'));
+  if (!await exists(join(workspaceRoot, 'extras', ...path.split('/'))) && await exists(packaged)) return readFile(packaged);
+  return repoFile(workspaceRoot, `extras/${path}`);
+};
 
 export interface AddResult { written: string[]; unchanged: string[]; kept: string[]; fonts: string[] }
 
@@ -89,7 +43,7 @@ export async function addExtra(workspaceRoot: string, dir: string, name: string,
   }
   if (extra.fonts?.length) {
     const file = join(dir, 'mografy.json');
-    const project = JSON.parse(await readFile(file, 'utf8')) as { fonts?: FontEntry[] };
+    const project = JSON.parse(await readFile(file, 'utf8')) as { fonts?: ExtraFont[] };
     const fonts = project.fonts ?? [];
     for (const font of extra.fonts) {
       if (fonts.some(f => f.path === font.path)) continue;
@@ -100,12 +54,22 @@ export async function addExtra(workspaceRoot: string, dir: string, name: string,
   return result;
 }
 
-export function printAdd(name: string, dir: string, result: AddResult) {
+/**
+ * Where the extra's guide is: the Skill's reference beside the project, in the workspace or the user's folders, or,
+ * when no agent can find the Skill (init does not install it), the command that installs it.
+ */
+export function guideLine(reference: string, places: string[], home?: string) {
+  const skill = places.flatMap(place => skillLocations(place, home)).find(file => existsSync(file));
+  if (skill) return `Guide: ${displayPath(join(dirname(skill), 'references', reference))}`;
+  return `Guide: references/${reference} in the Mografy Skill, which is not installed here. Install it with: ${SKILL_INSTALL}`;
+}
+
+export function printAdd(name: string, dir: string, result: AddResult, workspaceRoot = dir) {
   const extra = EXTRAS[name]!;
   console.log(`Added ${name} to ${displayPath(dir)}`);
   for (const file of result.written) console.log(`  + ${file}`);
   for (const file of result.unchanged) console.log(`  = ${file} (already up to date)`);
   for (const file of result.kept) console.log(`  ! ${file} differs from the extra and was kept. Use --force to replace it.`);
   if (result.fonts.length) console.log(`  + fonts in mografy.json: ${result.fonts.join(', ')}`);
-  console.log(`\nNext: ${extra.next}\nGuide: .agents/skills/mografy/references/${extra.reference}`);
+  console.log(`\nNext: ${extra.next}\n${guideLine(extra.reference, [dir, workspaceRoot])}`);
 }

@@ -1,6 +1,6 @@
 // Runs inside headless Chromium. Loads one compiled scene build and serves frames to Node.
 // Frame bytes go back by POST to the host server, never through JSON or PNG.
-import { outputFrameCount } from '@mografy/core';
+import { outputFrameCount } from '@mografy/core/browser';
 import { changedBox, createSceneRuntime, frameSamples, outputSampleTimes, renderOutputFrame } from '@mografy/runtime';
 import type { SceneModule, SceneRuntime, OutputSettings } from '@mografy/runtime';
 import type { BeatGrid, ExportSize, FrameCost, ParameterValues, SceneProject } from '@mografy/core';

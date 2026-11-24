@@ -7,6 +7,7 @@ import { dirname, join, relative, sep } from 'node:path';
 import { createInLibrary, createProject, installation, isProject } from '@mografy/server';
 import { displayPath, workspaceRoot } from './paths.js';
 import { exists, repoFile } from './github.js';
+import { guideLine } from './extras.js';
 
 /** The checkout or workspace whose templates/ is read first (see `workspaceRoot`). */
 export const ROOT = workspaceRoot;
@@ -27,12 +28,17 @@ export const TEMPLATE_SHARED = ['kit.ts', 'editorial.ts', 'montage.ts'];
 
 const source = (workspaceRoot: string, path: string) => repoFile(workspaceRoot, path);
 
+/** The templates installed in a workspace's templates/ (the player's sidebar lists them). */
+export const INSTALLED_TEMPLATES = 'templates/installed.json';
+
 const cache = new Map<string, TemplateEntry[]>();
 /** The template catalog: templates/catalog.json from this checkout, or from GitHub. */
 export async function listTemplates(workspaceRoot = ROOT): Promise<TemplateEntry[]> {
   if (cache.has(workspaceRoot)) return cache.get(workspaceRoot)!;
   const data = await source(workspaceRoot, 'templates/catalog.json').catch(() => undefined);
-  const templates = data ? (JSON.parse(data.toString('utf8')) as { templates: TemplateEntry[] }).templates : [];
+  // Offline in a workspace: the templates installed in its templates/ are still known.
+  const installed = data ?? await readFile(join(workspaceRoot, ...INSTALLED_TEMPLATES.split('/'))).catch(() => undefined);
+  const templates = installed ? ((JSON.parse(installed.toString('utf8')) as { templates?: TemplateEntry[] }).templates ?? []).map(t => ({ ...t, agentHint: t.agentHint ?? '' })) : [];
   cache.set(workspaceRoot, templates);
   return templates;
 }
@@ -69,7 +75,7 @@ const STARTS = SEQUENCE.reduce<number[]>((t, [template], i) => [...t, i ? t[i - 
 export const meta = {
   width: ${w}, height: ${h}, fps: 30, background: ${camel(templates[0]!.id)}.meta.background,
   duration: STARTS.at(-1)! + SEQUENCE.at(-1)![0].meta.duration,
-  shots: SEQUENCE.map(([template], i) => ({ end: STARTS[i]! + template.meta.duration, stop: STARTS[i]! + template.meta.duration * .7, title: template.template.name })),
+  shots: SEQUENCE.map(([template], i) => ({ end: STARTS[i]! + template.meta.duration, stop: STARTS[i]! + template.meta.duration * .7, title: \`S\${String(i + 1).padStart(2, '0')} \${template.template.name}\` })),
 };
 export const params = {};
 
@@ -136,6 +142,33 @@ export async function writeEditorConfig(workspaceRoot: string, dir: string) {
   return true;
 }
 
+
+/**
+ * Download a template, the shared modules and the fonts into the workspace's own templates/ (the same paths as in
+ * the repository), so later \`add <template> projects/<name>\` copies work offline, and list it in installed.json.
+ * Returns the files written; a file that is already there is kept.
+ */
+export async function installTemplate(workspaceRoot: string, id: string) {
+  const entry = (await listTemplates(workspaceRoot)).find(s => s.id === id);
+  if (!entry) throw new Error(`Unknown template: ${id}\nTemplates:\n${await templatesList(workspaceRoot)}`);
+  const written: string[] = [];
+  const files = [`templates/${id}.ts`, ...TEMPLATE_SHARED.map(f => `templates/${f}`), ...TEMPLATE_FONTS.map(f => f.from), ...LICENCES.map(([a]) => a)];
+  for (const path of files) {
+    const target = join(workspaceRoot, ...path.split('/'));
+    if (await exists(target)) continue;
+    const data = await source(workspaceRoot, path);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, data);
+    written.push(path);
+  }
+  const index = join(workspaceRoot, ...INSTALLED_TEMPLATES.split('/'));
+  const installed = await readFile(index, 'utf8').then(text => (JSON.parse(text) as { templates?: Record<string, unknown>[] }).templates ?? [], () => []);
+  const { id: _, agentHint: __, ...rest } = entry; void _; void __;
+  const next = [...installed.filter(t => t.id !== id), { id, ...rest }];
+  await writeFile(index, JSON.stringify({ version: 1, templates: next }, null, 2) + '\n');
+  return { entry, written };
+}
+
 export interface TemplateResult { written: string[]; unchanged: string[]; kept: string[]; fonts: string[] }
 
 /** Copy a template, the shared modules and the fonts into a project. Files that differ are kept unless `force` is set. */
@@ -184,7 +217,7 @@ export function printTemplatesDone(dir: string, ids: string[], created: boolean,
     ...skipped.length ? [`Not in the sequence (other aspect ratio): ${skipped.join(', ')}. Use them in a ${aspect === '9:16' ? '16:9' : '9:16'} project.`] : [],
     created ? `Open it: npx mografy dev ${displayPath(dir)}` : 'Play one inside your film:',
     ...created ? [] : [`  import * as ${camel(first)} from './templates/${first}.js';`, `  import { play } from './templates/kit.js';`, `  play(ctx, time, 2.0, ${camel(first)}, { /* params */ });`],
-    'Guide: .agents/skills/mografy/references/templates.md',
+    guideLine('templates.md', [dir, workspaceRoot]),
   ];
   console.log(lines.join('\n'));
 }

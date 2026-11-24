@@ -1,5 +1,5 @@
 // Batch export options and the queue request they make. The dialog lives in BatchExportDialog.tsx.
-import { EXPORT_PRESETS } from '@mografy/core';
+import { EXPORT_PRESETS } from '@mografy/core/browser';
 import type { ExportFormat, ExportPreset, QueueRequest } from '@mografy/core';
 
 export type BatchFormat = ExportFormat;

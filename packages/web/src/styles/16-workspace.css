@@ -1,0 +1,18 @@
+/* Workspace folders and the start screen. Part of styles.css: the files load in their numbered order, and later files override earlier ones. */
+/* ---------------------------------------------------------------- workspace folders and start screen */
+.ws-folder { margin-left: 2px; font-family: var(--mono, ui-monospace, monospace); font-size: 11px; font-weight: 400; color: var(--faint); opacity: .8; }
+.ws-empty p, .template-detail p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.ws-command { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surround); text-align: left; }
+.ws-command code { flex: 1; min-width: 0; font-size: 11.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ws-command span { flex: none; font-size: 11px; color: var(--signal); }
+.ws-command:hover { border-color: var(--line-strong); }
+.template-detail { padding: 4px 8px 10px 24px; display: grid; gap: 8px; }
+.template-detail .ws-hint { color: var(--faint); }
+.template-row.open > .project-row { background: var(--ui-raised); }
+.workspace > .welcome { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 5; display: grid; place-items: center; padding: 32px 24px; overflow: auto; background: var(--surround, #0b0c0e); }
+.workspace.with-projects > .welcome { left: var(--left-w, 248px); }
+@media (max-width: 960px) { .workspace.with-projects > .welcome { position: static; } }
+.ws-empty a { color: var(--signal); }
+.project-scope.ws button { padding: 0 8px; }
+.ws-empty { display: grid; gap: 8px; margin: 0; padding: 2px 8px 6px 24px; font-size: 12px; color: var(--faint); }
+.welcome-hint { margin: 0; font-size: 14px; color: var(--faint); text-align: center; }

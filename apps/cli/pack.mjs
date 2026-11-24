@@ -1,8 +1,8 @@
 // `pnpm pack:cli`: assemble the `mografy` npm package from this checkout's built packages and pack it.
 //
 // The package is the runtime half of the workspace and nothing else: each @mografy/* package's dist (without
-// sourcemaps), the player's built web app, the built-in components and their previews, the reference film catalog.
-// No film itself: every reference film, the intro included, downloads from GitHub on `mografy add`. Not the agent Skill: it is installed on its own (`npx skills add mografy/mografy -g`), so agents get
+// sourcemaps), the player's built web app, the built-in components and their previews, the extras, and bundle/ with the
+// templates and reference films (deduplicated) that init copies into a workspace. Showcase films download on demand. Not the agent Skill: it is installed on its own (`npx skills add mografy/mografy -g`), so agents get
 // it whichever way Mografy is installed, and it updates with `npx skills update`. The workspace packages are vendored, unchanged, under lib/node_modules/@mografy/,
 // so Node and esbuild find them by ordinary package resolution and every path they resolve at runtime
 // (import.meta.resolve, the scene host's in-page bundle, the runtime helpers scenes compile against) works exactly as
@@ -17,6 +17,7 @@
 // Prints the tarball path and its packed and unpacked sizes, and fails when the tarball is larger than --max-mb.
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,7 +25,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..', '..');
 const arg = name => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
 const out = arg('--out') ?? join(here, 'dist');
-const maxMb = Number(arg('--max-mb') ?? 12);
+const maxMb = Number(arg('--max-mb') ?? 16);
 const app = JSON.parse(readFileSync(join(here, 'package.json'), 'utf8'));
 const version = arg('--version') ?? app.version;
 
@@ -77,13 +78,37 @@ for (const [name, extra] of Object.entries(PACKAGES)) {
 // Reference films: only the catalog, so `mografy add` lists them offline at this version; each downloads on demand.
 mkdirSync(join(stage, 'examples'), { recursive: true });
 cpSync(join(root, 'examples', 'catalog.json'), join(stage, 'examples', 'catalog.json'));
-// Mografy Templates (about 0.7 MB): `init` copies them into the workspace's templates/, so `mografy add <template>`
-// works offline and matches this version. Only the files Git tracks, so nothing local slips into the package.
-for (const file of execFileSync('git', ['ls-files', '-z', 'templates'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)) {
-  if (!existsSync(join(root, file))) continue;
+// Extras (cinema, cjk with its fonts, three, d3, p5, music, walkthrough, stage) ship in the package, so `npx mografy add <extra>`
+// works offline right after init. Only git-tracked files, so local experiments never leak into a release.
+for (const file of execFileSync('git', ['ls-files', 'extras'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean)) {
   mkdirSync(dirname(join(stage, file)), { recursive: true });
   cpSync(join(root, file), join(stage, file));
 }
+// Templates and every reference film ship in bundle/, so init fills a workspace's templates/ and examples/ offline
+// (showcase films still download from the website on `mografy add`). They are not at the package root: the player
+// lists the installation's examples/ directly, and bundle/ stores each distinct file once (the stage films share
+// the same Inter fonts), with bundle/files.json mapping every repository path to its stored file.
+const bundled = new Map(); // repository path -> bytes
+// Reference films are the ones in examples/catalog.json (another folder there may be a note, not a film).
+const catalogFilms = new Set(read(join(root, 'examples', 'catalog.json')).examples.map(film => film.name));
+for (const file of execFileSync('git', ['ls-files', 'templates', 'examples'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean)) {
+  if (!keep(file) || file.startsWith('examples/') && !catalogFilms.has(file.split('/')[1])) continue;
+  bundled.set(file, readFileSync(join(root, file)));
+}
+const stored = new Map(), files = {};
+for (const [path, data] of [...bundled].sort(([a], [b]) => a.localeCompare(b))) {
+  const hash = createHash('sha256').update(data).digest('hex').slice(0, 20);
+  const ext = path.match(/\.[A-Za-z0-9]+$/)?.[0] ?? '';
+  if (!stored.has(hash)) {
+    stored.set(hash, `blobs/${hash}${ext}`);
+    mkdirSync(join(stage, 'bundle', 'blobs'), { recursive: true });
+    writeFileSync(join(stage, 'bundle', 'blobs', `${hash}${ext}`), data);
+  }
+  files[path] = stored.get(hash);
+}
+writeFileSync(join(stage, 'bundle', 'files.json'), JSON.stringify({ version: 1, files }) + '\n');
+const raw = [...bundled.values()].reduce((sum, data) => sum + data.length, 0);
+console.log(`bundle/: ${bundled.size} files, ${stored.size} stored (${(raw / 1048576).toFixed(2)} MB before dedupe)`);
 cpSync(join(here, 'bin'), join(stage, 'bin'), { recursive: true });
 cpSync(join(root, 'LICENSE'), join(stage, 'LICENSE'));
 cpSync(join(here, 'README.md'), join(stage, 'README.md'));
@@ -102,7 +127,7 @@ writeFileSync(join(stage, 'package.json'), JSON.stringify({
   bin: { mografy: 'bin/mografy.js' },
   // Read by @mografy/server's `installation` to recognise this layout.
   mografy: { package: true },
-  files: ['bin', 'lib', 'examples', 'templates', 'README.md', 'LICENSE'],
+  files: ['bin', 'lib', 'examples', 'extras', 'bundle', 'README.md', 'LICENSE'],
   dependencies: Object.fromEntries(Object.entries(external).sort()),
 }, null, 2) + '\n');
 

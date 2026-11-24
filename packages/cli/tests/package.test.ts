@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,12 +33,25 @@ test('the npm package holds only what runs: no sources, sourcemaps or dev tools,
     const report = execFileSync(process.execPath, [join(workspace, 'apps/cli/pack.mjs'), '--out', out, '--version', '0.0.0-test'], { cwd: workspace, encoding: 'utf8' });
     assert.match(report, /MB packed/);
     const files = execFileSync('tar', ['tzf', join(out, 'mografy-0.0.0-test.tgz')], { encoding: 'utf8' }).split('\n').filter(Boolean).map(f => f.replace(/^package\//, ''));
-    for (const required of ['bin/mografy.js', 'package.json', 'examples/catalog.json', 'templates/catalog.json', 'templates/kit.ts',
+    for (const required of ['bin/mografy.js', 'package.json', 'examples/catalog.json',
       'lib/node_modules/@mografy/cli/dist/index.js', 'lib/node_modules/@mografy/cli/bin/locate.mjs', 'lib/node_modules/@mografy/server/template/mografy.json',
       'lib/node_modules/@mografy/render/dist/host-page.js', 'lib/node_modules/@mografy/runtime/dist/scene.js', 'lib/node_modules/@mografy/web/dist/index.html'])
       assert.ok(files.includes(required), `missing ${required}`);
     assert.deepEqual(files.filter(f => /\.map$|\.tsbuildinfo$|\/src\/|\/tests?\//.test(f)), []);
-    assert.deepEqual(files.filter(f => /^(extras|showreel|docs|\.agents|\.claude)\//.test(f) || /^examples\/.+\//.test(f)), [], 'no optional files, no films and no Skill');
+    // Templates and reference films ship only in bundle/ (never where the player lists films), and no Skill.
+    assert.deepEqual(files.filter(f => /^(templates|showcase|showreel|docs|\.agents|\.claude)\//.test(f) || /^examples\/.+\//.test(f)), [], 'films and templates only in bundle/, no Skill');
+    const bundle = JSON.parse(execFileSync('tar', ['xzOf', join(out, 'mografy-0.0.0-test.tgz'), 'package/bundle/files.json'], { encoding: 'utf8', maxBuffer: 1 << 26 })) as { files: Record<string, string> };
+    const catalog = JSON.parse(await readFile(join(workspace, 'examples/catalog.json'), 'utf8')) as { examples: { name: string; files: string[] }[] };
+    for (const film of catalog.examples) for (const file of film.files)
+      assert.ok(bundle.files[`examples/${film.name}/${file}`], `reference film file in the bundle: ${film.name}/${file}`);
+    assert.ok(bundle.files['templates/catalog.json'] && bundle.files['templates/kit.ts'], 'templates in the bundle');
+    assert.ok(Object.keys(bundle.files).every(path => /^(templates|examples)\//.test(path)), 'no showcase films in the bundle');
+    for (const stored of new Set(Object.values(bundle.files))) assert.ok(files.includes(`bundle/${stored}`), `stored file shipped: ${stored}`);
+    // Identical files are stored once: the ten stage films share one copy of each Inter font.
+    const inter = Object.entries(bundle.files).filter(([path]) => /^examples\/stage-[^/]+\/assets\/Inter-Regular\.otf$/.test(path));
+    assert.equal(inter.length, 10); assert.equal(new Set(inter.map(([, stored]) => stored)).size, 1);
+    for (const extra of ['extras/cinema/cinema.ts', 'extras/cjk/cjk.ts', 'extras/cjk/fonts/NotoSansCJKtc-Medium-subset.otf', 'extras/three/three.module.js', 'extras/music/score.py', 'extras/walkthrough/walkthrough.ts', 'extras/stage/stage.ts'])
+      assert.ok(files.includes(extra), `extras ship in the package: missing ${extra}`);
     const manifest = JSON.parse(execFileSync('tar', ['xzOf', join(out, 'mografy-0.0.0-test.tgz'), 'package/package.json'], { encoding: 'utf8' }));
     assert.deepEqual(Object.keys(manifest.dependencies).sort(), ['esbuild', 'protobufjs', 'ws', 'zod']);
     assert.equal(manifest.bundleDependencies, undefined);

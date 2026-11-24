@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile, appendFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile, appendFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { addExtra, EXTRAS } from '../src/extras.js';
+import { addExtra, EXTRAS, guideLine } from '../src/extras.js';
 
 const workspace = resolve(fileURLToPath(import.meta.url), '../../../..');
 
@@ -30,4 +30,21 @@ test('mografy add copies an extra, registers its fonts once and keeps changed fi
 test('every extra lists files that exist in the checkout', async () => {
   for (const [name, extra] of Object.entries(EXTRAS))
     for (const [from] of extra.files) await readFile(join(workspace, 'extras', from)).catch(() => assert.fail(`${name}: missing extras/${from}`));
+});
+
+test('each helper module ships with its demo, so "copy the demo" works in a workspace too', () => {
+  for (const name of ['cinema', 'cjk', 'three', 'd3', 'p5', 'walkthrough'])
+    assert.ok(EXTRAS[name]!.files.some(([, to]) => to === `scenes/${name}-demo.ts`), name);
+});
+
+test('the guide line after add points at the Skill, or says how to install it', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'mografy-guide-'));
+  try {
+    const home = join(dir, 'home'), ws = join(dir, 'ws'), project = join(ws, 'projects', 'film');
+    await mkdir(project, { recursive: true }); await mkdir(home);
+    assert.match(guideLine('cjk-typography.md', [project, ws], home), /not installed here\. Install it with: npx skills add mografy\/mografy$/);
+    await mkdir(join(ws, '.agents/skills/mografy'), { recursive: true });
+    await writeFile(join(ws, '.agents/skills/mografy/SKILL.md'), '# Mografy');
+    assert.match(guideLine('cjk-typography.md', [project, ws], home), /^Guide: .*\.agents\/skills\/mografy\/references\/cjk-typography\.md$/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

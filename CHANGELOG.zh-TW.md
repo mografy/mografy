@@ -12,6 +12,35 @@ npx mografy@latest init
 
 在這個 repository 的 Git checkout 裡，`npx mografy update --check` 會列出會更新什麼，`npx mografy update` 會更新 checkout。還沒有 `update` 指令的舊 checkout：先停止播放器，執行一次 `git pull --ff-only` 與 `pnpm install`，再用 `npx mografy dev` 重新開啟。
 
+## Mografy Triangulum v0.3.0 — 2026-11-24
+
+### 新增
+
+- **`d3` extra：用 D3 做資料視覺化**：`npx mografy add d3 projects/<影片>` 會複製 `scenes/d3.ts`、十秒導覽 `scenes/d3-demo.ts`（canvas 軸線上的長條、自己畫出來再換資料的折線、甜甜圈圖、力導向網絡、旋轉地球）和 D3 7.9.2（ISC，約 0.23 MB）的 `assets/d3.module.js`。D3 負責計算（比例尺、圖形、版面配置、地圖投影、色彩、數字格式），所有東西都依時間畫在畫面的 canvas 上：`axis` 畫軸線，`trimPoints` 和 `strokeReveal` 讓線條自己畫出來，`sweepArcs` 展開圓餅，`tweenData` 取代 d3-transition，`simulate` / `positionsAt` 先把力導向算完再顯示任何時刻，`seeded` 給 D3 有種子的亂數，`loadData` 讀專案裡的 CSV/TSV/JSON，`zhNumber` 輸出「萬」「億」。Skill：`references/data-viz.md`。
+- **`p5` extra：一格一格驅動的 p5.js sketch**：`npx mografy add p5 projects/<影片>` 會複製 `scenes/p5.ts`、八秒導覽 `scenes/p5-demo.ts`，以及官方未修改的 p5.js 2.4.0（LGPL-2.1，約 1.2 MB）`assets/p5.module.js` 和授權檔。p5 自己的 draw 迴圈不會跑：`sketch()` 每次重設 `random()` 的種子，再為 Mografy 要的那一刻呼叫 `draw(p, t, frame)`，所以每次輸出的像素都一樣。Skill：`references/p5-sketch.md`，也教怎麼搬現成的 sketch。
+- **函式庫 extra 的決定性測試**：render 測試會用順序、倒序、跳格和新頁面四種方式畫 d3 與 p5 的導覽，像素必須完全相同。
+
+### 修正
+
+- **沒開播放器時，`npx mografy check` 會真的試算畫面了**：開啟專案時，沒驗證過的版本只會讀取匯出內容，所以沒開播放器的 `check` 雖然印出「Compiled and trial-rendered」，其實沒有畫任何一格，會漏掉 `renderFrame` 裡的 `Math.random` 或拋出的錯誤。現在會先試算再回報。
+
+## Mografy Triangulum v0.1.3 — 2026-11-21
+
+### 變更
+
+- **播放器從工作區開始** — 工作區還沒有影片時，`npx mografy dev` 不再自動打開內建元件：中間只提示「點擊左側的元件或專案，就會在這裡打開」，左側一定會顯示工作區的 `projects/`、`showcase/`、`examples/`、`templates/` 四個資料夾（空的就顯示沒有內容）。內建元件仍放在 `projects/.components`，摺疊在最下面。
+- **模板和參考影片隨 `init` 安裝，不用連網** — npm 套件包含所有模板和所有參考影片（介紹影片與十支 `stage-*` 短片；相同的字型檔只存一份，約多 1.3 MB），`init` 會直接放進工作區的 `templates/` 和 `examples/`，不用下載。只補上缺少的：你改過的影片資料夾或模板檔案不會被動到。`npx mografy add <模板...> projects/<名稱>` 一樣可以直接用模板開新影片。Showcase 影片仍是加入時才下載。
+- **新的 showcase/ 資料夾** — 官網 Showcase 的影片會下載到工作區新的 `showcase/`（`npx mografy add showcase/ <影片>`），播放器左側列在「Showcase」；`examples/` 放參考影片。
+- **`add` 可以指定安裝的資料夾** — 資料夾可以寫在前面：`npx mografy add examples/ <影片>` 把參考影片放到 `examples/<影片>`，`npx mografy add projects/ <影片>` 變成你自己的專案 `projects/<影片>`，`npx mografy add templates/ <模板...>` 安裝模板。任何不是專案的資料夾都一樣，資料夾寫在最後也可以。
+- **extras 隨 Mografy 安裝，Skill 另外安裝** — npm 套件現在包含所有 extras（cinema、含字型的 cjk、three、music、walkthrough、stage），`init` 之後 `npx mografy add <extra> projects/<影片>` 不用連網。`init` 不再把 Skill 寫進工作區，改成提示執行 `npx skills add mografy/mografy`，裝在該資料夾（只有要每個資料夾都能用時才加 `-g`）。套件約 10.5 MB。
+- **extras 像 `shadcn add` 一樣用** — 所有 extras 都在套件裡，`npx mografy add <extra> projects/<影片>` 只把這支影片需要的檔案複製進去，並列出寫入的每個檔案；輔助工具的導覽範例（`scenes/<extra>-demo.ts`）會一起複製，沒有任何場景匯入它。場景匯入了專案還沒有的 extra 時，錯誤訊息會直接給出要執行的指令（`"./cinema.js" is the Mografy extra cinema, which isn't in this project yet. Add it with: npx mografy add cinema projects/<影片>`）。工作區的 `AGENTS.md` 會列出所有 extras 和這個指令；`add` 之後的 Guide 那一行，在還沒安裝 Skill 時會說明怎麼安裝。
+- **小修正** — 用模板開的新片，鏡頭標題會是 `S01 …`、`S02 …`；小於 1 MB 的 Showcase 影片下載時以 KB 顯示大小。
+- **Skill 成為完整的知識庫** — 新增擴充元件、設定與開發者參考文件；匯出細節移到 `output.md`；`init` 和 `--help` 會指向 Skill。
+
+### 修正
+
+- **3D 影片的試算渲染不再逾時** — 試算渲染的時間限制從 2026-10-20 訂的 20 秒放寬為 60 秒（setup 仍是 30 秒，每個畫格仍是 120 秒）。無頭瀏覽器以軟體繪製 WebGL，Three.js 影片的前幾格要花約 20 秒編譯著色器，所以能正常運作的 3D 場景可能被回報為錯誤。
+
 ## Mografy Triangulum v0.1.2 — 2026-11-21
 
 ### 變更
@@ -145,7 +174,7 @@ npx mografy@latest init
 - **各平台的硬體編碼**——macOS 用 VideoToolbox；Windows 用 NVIDIA NVENC、Intel Quick Sync、AMD AMF；Linux 用 NVENC、VA-API、Quick Sync。Mografy 會先用極小的試編碼逐一確認，採用第一個能用的；都不能用時改用軟體編碼並註明。完成時，匯出視窗與終端機都會顯示實際使用的編碼器。VideoToolbox 已實測；Windows 與 Linux 的編碼器是新加入的，品質設定是初步校準，歡迎回報 `fast` 在你的顯示卡上的畫質與耗時。
 - **Windows 也能用 GPU 繪製影格**（Direct3D 11），與 macOS（Metal）相同。其他平台以 CPU 繪製。
 - **進階設定**——快門角度（預設 360°；180° 的動態模糊較短，有電影感）、漸層抖動（消除柔和漸層與光暈中的色階）、硬體品質（1–100），以及 Auto 平行數。在 `mografy.json` 設定 `render.sampleWindow: "centred"`，還能讓每格的動態取樣以該格自己的時間為中心，與音訊同步。所有設定見[設定說明](docs/configuration.md#export-settings)。
-- **`scripts/bench-export.ts`**——量測匯出時間，並與無損參考比較檔案大小、SSIM、VMAF。本次結果見 [docs/STATUS.md](docs/STATUS.md)。
+- **`scripts/bench-export.ts`**——量測匯出時間，並與無損參考比較檔案大小、SSIM、VMAF。本次結果見[封存的開發紀錄](docs/archive/STATUS-2026.md)。
 
 ### 變更
 

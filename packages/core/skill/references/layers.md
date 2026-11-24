@@ -7,17 +7,17 @@ A layer is one part of the film the user may want to retime, hide, copy, rename,
 The beat table stays the one source of time. Take each layer's `in` and `out` from `beats([...])`, never from separate numbers:
 
 ```ts
-import { beats, timeline } from '@mografy/runtime';
+import { beats, timeline, shotColour, FILM_COLOUR } from '@mografy/runtime';
 import edits from './timeline.json'; // create it as {}; the editor rewrites it
 
-export const BEATS = beats([{ title: 'Open', end: 3 }, { title: 'Offer', end: 8 }, { title: 'Close', end: 12 }]);
+export const BEATS = beats([{ title: 'S01 Open', end: 3 }, { title: 'S02 Offer', end: 8 }, { title: 'S03 Close', end: 12 }]);
 const [open, offer, close] = BEATS.list;
 export const TIMELINE = timeline([
   // top to bottom, as the timeline lists them
-  { id: 'title', name: 'Title', in: open!.start + .4, out: offer!.end, enter: 'fade-up', exit: 'fade', subtitles: ['title'] },
-  { id: 'card', name: 'Offer card', in: offer!.start, out: close!.end, enter: 'pop' },
-  { id: 'logo', name: 'Logo', in: close!.start, out: close!.end, enter: 'blur-in' },
-  { id: 'bg', name: 'Background', in: 0, out: BEATS.duration, still: true, locked: true },
+  { id: 's01-title', name: 'S01 Title', colour: shotColour(1), in: open!.start + .4, out: offer!.end, enter: 'fade-up', exit: 'fade', subtitles: ['title'] },
+  { id: 's02-card', name: 'S02 Offer card', colour: shotColour(2), in: offer!.start, out: close!.end, enter: 'pop' },
+  { id: 's03-logo', name: 'S03 Logo', colour: shotColour(3), in: close!.start, out: close!.end, enter: 'blur-in' },
+  { id: 'film-bg', name: 'Background', colour: FILM_COLOUR, in: 0, out: BEATS.duration, still: true, locked: true },
 ], edits);
 export const meta = { /* width, height, duration, fps, background */ shots: BEATS.shots, layers: TIMELINE.meta };
 ```
@@ -27,7 +27,16 @@ export const meta = { /* width, height, duration, fps, background */ shots: BEAT
 - `locked: true` keeps the editor from moving it (a background, a camera bed). `hidden: true` starts it hidden.
 - `still: true` for a part that does not change with time while at rest (a background, a static panel): it is drawn once and its pixels are reused; its motions still apply.
 - `subtitles`: the `role: 'subtitle'` parameters the layer shows, so the subtitle list can jump to it.
-- `colour`: the layer's track colour in the editor (not the film).
+- `colour`: the layer's tag colour in the editor's timeline (not the film). Always set it; see **Tag colours**.
+
+## Tag colours
+
+Give every declared layer a `colour` before handing the film over, so the user can see at a glance which parts belong to which shot:
+
+- Layers of shot `S0n` use `shotColour(n)`: green, pink, blue, violet, amber, teal, copper, then round again. All layers of one shot share its colour, and neighbouring shots never share one. The editor gives shot layers the same colours, so a film keeps its colours when it gains real layers.
+- Parts under the whole film (background, grain, a camera bed, music) use the grey `FILM_COLOUR`.
+- The layer `name` starts with the shot ID (`S02 Offer card`) and the `id` with its lower-case form (`s02-card`), matching the storyboard's Layers column ([storyboard.md](storyboard.md#shot-ids-become-shots-and-layers)).
+- When layering an existing film whose ids already have edits, keep the ids and add only `colour` and the `name` prefix.
 
 ## Draw: pick one of three
 
@@ -44,14 +53,14 @@ export const meta = { /* width, height, duration, fps, background */ shots: BEAT
 
 ## Layering an existing film
 
-1. Name the parts the user would want to adjust; one layer each. Parts that cannot be separated stay one layer.
+1. Name the parts the user would want to adjust; one layer each, named and coloured by the shot it enters in (**Tag colours**). Parts that cannot be separated stay one layer.
 2. Give each the window it is on screen, from the beat table.
 3. Wrap its existing drawing in `draw`, `drawFrame` or `each`, reading time from `own`.
 4. Verify the layered film is unchanged: with an empty `timeline.json`, compare frame hashes at 12 times spread over the film against the original (`npx mografy review` sheets side by side as a fallback). Every frame must match.
 
 ## Films without layers
 
-A scene that declares no layers still gets editable layers: the build splits it into one layer per shot (from `meta.shots`, else the older `slides.shots` some `mografy.json` files still carry), and the editor can retime, reorder, copy and give each shot an enter and exit motion. Old projects get this without any change. When a multi-shot film has no `meta.shots`, add them from the beat table (`shots: BEATS.shots`) so the timeline shows its shots. Declare real layers when the user wants to adjust parts inside a shot.
+A scene that declares no layers still gets editable layers: the build splits it into one layer per shot (from `meta.shots`, else the older `slides.shots` some `mografy.json` files still carry), and the editor can retime, reorder, copy and give each shot an enter and exit motion. Old projects get this without any change. When a multi-shot film has no `meta.shots`, add them from the beat table (`shots: BEATS.shots`, beat titles starting `S01`, `S02`, …) so the timeline shows its shots. Declare real layers when the user wants to adjust parts inside a shot.
 
 ## Edits are the user's
 

@@ -34,7 +34,7 @@ export const zh = {
   paReset: '重設', paResetHelp: '回到場景的預設值', subtitles: '字幕', autoSave: '自動儲存', askAiText: '其他文字請 AI 修改。', colours: '顏色', controls: '控制項', sceneSettings: '場景設定', sceneEmpty: '這個場景沒有可以調整的設定。請 AI 修改內容。',
 
   newProject: '新增專案', projectName: '專案名稱', newProjectName: '新專案名稱', create: '建立', creating: '建立中…', openingShort: '開啟中…', savedIn: (p: string) => `會存在 ${p}`, needsFix: 'mografy.json 需要修正', openNow: '目前開啟', readyMade: '即用動畫', justNow: '剛剛', minAgo: (n: number) => `${n} 分鐘前`, hAgo: (n: number) => `${n} 小時前`,
-  groups: { component: '內建元件', recent: '最近開啟', library: '專案資料夾', example: '範例' } as Record<string, string>,
+  groups: { component: '內建元件', recent: '最近開啟', library: '專案資料夾', example: '範例', showcase: 'Showcase' } as Record<string, string>,
 
 
   xpTitle: '匯出動畫', xdBatch: '匯出多個專案…', xdClose: '關閉匯出',

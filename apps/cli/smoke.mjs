@@ -51,22 +51,36 @@ try {
   const wsEnv = { ...process.env, MOGRAFY_STATE: join(temp, 'ws-state'), MOGRAFY_PACKAGE_SPEC: join(out, tarball) };
   mkdirSync(work);
   const init = (cwd, ...args) => run(process.execPath, [bin, 'init', ...args], { cwd, env: wsEnv, shell: false });
-  console.log(init(work).trim().split('\n').filter(line => !/^npm /.test(line)).join('\n'));
+  const initOut = init(work);
+  console.log(initOut.trim().split('\n').filter(line => !/^npm /.test(line)).join('\n'));
+  if (!initOut.includes('npx skills add mografy/mografy')) throw new Error('init does not say how to install the Skill');
   const local = join(ws, 'node_modules', 'mografy', 'bin', 'mografy.js');
   statSync(join(ws, 'mografy.workspace.json')); statSync(local);
-  for (const folder of ['projects', 'examples', 'templates']) statSync(join(ws, folder));
-  statSync(join(ws, 'templates', 'catalog.json'));
-  for (const host of ['.agents', '.claude']) statSync(join(ws, host, 'skills', 'mografy', 'SKILL.md'));
+  for (const folder of ['projects', 'showcase', 'examples', 'templates']) statSync(join(ws, folder));
+  // Templates and every reference film come from the package's bundle, offline; showcase films do not.
+  statSync(join(ws, 'templates', 'hook-impact.ts')); statSync(join(ws, 'templates', 'installed.json')); statSync(join(ws, 'templates', 'fonts', 'Inter-500-latin.ttf'));
+  for (const film of JSON.parse(readFileSync(join(here, '..', '..', 'examples', 'catalog.json'), 'utf8')).examples) statSync(join(ws, 'examples', film.name, 'mografy.json'));
+  statSync(join(ws, 'examples', 'stage-bento', 'assets', 'Inter-Regular.otf'));
+  if (readdirSync(join(ws, 'showcase')).join() !== 'README.md') throw new Error('init installed showcase films');
+  // The Skill is installed separately (`npx skills add mografy/mografy`), not by init.
+  for (const host of ['.agents', '.claude']) if (existsSync(join(ws, host, 'skills', 'mografy'))) throw new Error('init wrote the Skill');
   if (existsSync(join(ws, 'mografy.json'))) throw new Error('init made the workspace a project');
   if (readdirSync(join(ws, 'projects')).some(name => !name.startsWith('.') && name !== 'README.md')) throw new Error('init created a project');
-  // The player opens on the built-in components, kept inside the workspace.
-  await devOpens('npx', ['--no-install', 'mografy', 'dev', '--no-open'], ws, /^Project: .*projects[\\/]\.components/m, wsEnv);
-  // A new film inside the workspace goes into projects/; a template goes there too, read from templates/ offline.
+  // With no film yet the player opens on the workspace's start screen (the built-in components stay in projects/.components).
+  await devOpens('npx', ['--no-install', 'mografy', 'dev', '--no-open'], ws, /^No project open yet/m, wsEnv);
+  // A new film inside the workspace goes into projects/; templates, films and extras then go into films offline
+  // (GitHub unreachable here).
   init(ws, 'first-film');
   statSync(join(ws, 'projects', 'first-film', 'mografy.json'));
-  const wsRun = (...args) => run(process.execPath, [local, ...args], { cwd: ws, env: { ...wsEnv, MOGRAFY_GITHUB_URL: 'http://127.0.0.1:9/' }, shell: false });
-  wsRun('add', 'hook-impact');
+  const wsRun = (url, ...args) => run(process.execPath, [local, ...args], { cwd: ws, env: { ...wsEnv, MOGRAFY_GITHUB_URL: url }, shell: false });
+  wsRun('http://127.0.0.1:9/', 'add', 'hook-impact', 'projects/');
+  wsRun('http://127.0.0.1:9/', 'add', 'stage-phone', 'projects/');
+  statSync(join(ws, 'projects', 'stage-phone', 'assets', 'Inter-Regular.otf'));
   statSync(join(ws, 'projects', 'hook-impact', 'mografy.json'));
+  // Extras ship in the package: they install offline, each with its demo.
+  const added = wsRun('http://127.0.0.1:9/', 'add', 'cinema', 'cjk', 'projects/hook-impact');
+  if (!added.includes('+ scenes/cinema-demo.ts') || !added.includes('Guide: ')) throw new Error(`add cinema: no demo or guide line:\n${added}`);
+  statSync(join(ws, 'projects', 'hook-impact', 'scenes', 'cinema.ts')); statSync(join(ws, 'projects', 'hook-impact', 'assets', 'NotoSansCJKtc-Medium-subset.otf'));
   // Running init again keeps the projects and only updates Mografy.
   const scene = readFileSync(join(ws, 'projects', 'first-film', 'scenes', 'main.ts'), 'utf8');
   init(join(ws, 'projects', 'first-film'));

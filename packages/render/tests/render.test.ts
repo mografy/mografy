@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { validateSceneProject } from '@mografy/core';
-import { buildScene, SceneHost, hostTimeouts, renderVideo, renderReview, ffmpegOutput, ffmpegPath, runFfmpeg } from '../src/index.js';
+import { buildScene, missingExtraHint, SceneHost, hostTimeouts, renderVideo, renderReview, ffmpegOutput, ffmpegPath, runFfmpeg } from '../src/index.js';
 
 const template = resolve(fileURLToPath(import.meta.url), '../../../server/template');
 let dir: string, host: SceneHost;
@@ -28,6 +28,19 @@ test('build: imports limited to the project and @mografy/runtime', async () => {
   await assert.rejects(buildScene(dir, p, { 'scenes/main.ts': "import x from '../../secret.ts'; export const meta = x;" }), /inside the project folder/);
   await assert.rejects(buildScene(dir, p, { 'scenes/main.ts': 'export function renderFrame() { return Math.random(); }' }), /scenes\/main.ts:1 Math.random/);
   await assert.rejects(buildScene(dir, p, { 'scenes/main.ts': 'export const = ;' }), /did not compile[\s\S]*main.ts:1/);
+});
+
+test('build: importing an extra the project lacks names the command that adds it', async () => {
+  const p = await project();
+  await assert.rejects(buildScene(dir, p, { 'scenes/main.ts': "import { plate } from './cinema.js'; export const meta = plate;" }),
+    /Could not resolve "\.\/cinema\.js"\n"\.\/cinema\.js" is the Mografy extra cinema, which isn't in this project yet\. Add it with: npx mografy add cinema/);
+  assert.equal(missingExtraHint('Could not resolve "./three"', '/w/projects/film', '/w'),
+    '"./three" is the Mografy extra three, which isn\'t in this project yet. Add it with: npx mografy add three projects/film');
+  assert.match(missingExtraHint('Could not resolve "../scenes/stage.ts"', '/w/projects/film', '/w/projects/film')!, /add stage$/);
+  assert.match(missingExtraHint('Could not resolve "./cjk.js"', '/elsewhere/film', '/w')!, /add cjk "\/elsewhere\/film"$/);
+  // Not an extra, a bare package, music (no scene module), or another error: no hint.
+  for (const text of ['Could not resolve "./missing.js"', 'Could not resolve "cinema"', 'Could not resolve "./music.js"', 'Expected ";"'])
+    assert.equal(missingExtraHint(text, '/w/projects/film', '/w'), undefined, text);
 });
 
 test('build: version follows code and assets, overrides never touch disk', async () => {
